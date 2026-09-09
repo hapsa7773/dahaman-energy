@@ -2115,48 +2115,47 @@ export default function Home() {
 
 
             {/* PHONE */}
-            <a
-              href="tel:+919057034374,8560034374"
-              className="group flex items-center gap-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 transition-all duration-300 hover:border-orange-400/40 hover:bg-white/[0.07]"
-            >
+           {/* PHONE */}
+<div className="group flex items-start gap-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 transition-all duration-300 hover:border-orange-400/40 hover:bg-white/[0.07]">
 
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-400 text-black">
+  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-orange-400 text-black">
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+    >
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 3.09 5.18 2 2 0 0 1 5.08 3h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L9 10.73a16 16 0 0 0 4.27 4.27l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92z" />
+    </svg>
+  </div>
 
-                <svg
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 3.09 5.18 2 2 0 0 1 5.08 3h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L9 10.73a16 16 0 0 0 4.27 4.27l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92z" />
-                </svg>
+  <div className="min-w-0">
+    <p className="text-[10px] uppercase tracking-[0.2em] text-white/35">
+      Call Us
+    </p>
 
-              </div>
+    <a
+      href="tel:+919057034374"
+      className="mt-1 block text-base font-medium text-white transition-colors hover:text-orange-400"
+    >
+      +91-9057034374
+    </a>
 
-              <div className="min-w-0">
+    <a
+      href="tel:+918560034374"
+      className="mt-2 block text-base font-medium text-white transition-colors hover:text-orange-400"
+    >
+      +91-8560034374
+    </a>
+  </div>
 
-                <p className="text-[10px] uppercase tracking-[0.2em] text-white/35">
-                  Call Us
-                </p>
+  <span className="ml-auto text-white/30 transition-all duration-300 group-hover:translate-x-1 group-hover:text-orange-400">
+    ↗
+  </span>
 
-                <p className="mt-1 text-base font-medium text-white">
-                  +91-9057034374 , 
-                </p>
-                <br></br>
-
-                <p className="mt-1 text-base font-medium text-white">
-                    +91-8560034374
-                    </p>
-
-              </div>
-
-              <span className="ml-auto text-white/30 transition-all duration-300 group-hover:translate-x-1 group-hover:text-orange-400">
-                ↗
-              </span>
-
-            </a>
+</div>
 
 
             {/* EMAIL */}
@@ -2528,42 +2527,42 @@ S151-152, Kalwar Road, Arihant Nagar, Hathoj, Jaipur, Rajasthan
           {/* PHONE */}
           <div className="flex gap-4">
 
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-orange-400">
-              <svg
-                width="17"
-                height="17"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.8 19.8 0 0 1 3.08 5.18 2 2 0 0 1 5.08 3h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L9 10.73a16 16 0 0 0 4.27 4.27l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z" />
-              </svg>
-            </div>
+  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-orange-400">
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.8 19.8 0 0 1 3.08 5.18 2 2 0 0 1 5.08 3h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.63a2 2 0 0 1-.45 2.11L9 10.73a16 16 0 0 0 4.27 4.27l1.27-1.27a2 2 0 0 1 2.11-.45c.85.29 1.73.5 2.63.62A2 2 0 0 1 22 16.92Z" />
+    </svg>
+  </div>
 
-            <div>
-              <p className="mb-1 text-[10px] uppercase tracking-[0.2em] text-white/30">
-                Phone
-              </p>
+  <div>
+    <p className="mb-1 text-[10px] uppercase tracking-[0.2em] text-white/30">
+      Phone
+    </p>
 
-              <a
-                href="tel:+919057034374 , 8560034374"
-                className="text-sm text-white/70 transition-colors hover:text-orange-400"
-              >
-                +91-9057034374 ,
-              </a>
-               <br></br>
-              <a
-              href="tel:+918560034374"
-              className="block text-sm text-white/70 transition-colors hover:text-orange-400"
->
-              +91-8560034374
-               </a>
-            </div>
+    <a
+      href="tel:+919057034374"
+      className="block text-sm text-white/70 transition-colors hover:text-orange-400"
+    >
+      +91-9057034374
+    </a>
 
-          </div>
+    <a
+      href="tel:+918560034374"
+      className="mt-1 block text-sm text-white/70 transition-colors hover:text-orange-400"
+    >
+      +91-8560034374
+    </a>
+  </div>
+
+</div>
 
 
           {/* EMAIL */}
