@@ -1,10 +1,87 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Navbar from "./components/Navbar";
 
 
+function CountUp({
+  end,
+  suffix = "",
+  duration = 1800,
+}: {
+  end: number;
+  suffix?: string;
+  duration?: number;
+}) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
+  const animationRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return;
+
+    const animate = () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+
+      setCount(0);
+      const startTime = performance.now();
+
+      const update = (now: number) => {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+
+        setCount(Math.round(eased * end));
+
+        if (progress < 1) {
+          animationRef.current = requestAnimationFrame(update);
+        } else {
+          setCount(end);
+        }
+      };
+
+      animationRef.current = requestAnimationFrame(update);
+    };
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          animate();
+        } else {
+          if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current);
+          }
+          setCount(0);
+        }
+      },
+      { threshold: 0.25 }
+    );
+
+    observer.observe(element);
+
+    return () => {
+      observer.disconnect();
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [end, duration]);
+
+  return (
+    <span ref={ref}>
+      {count}
+      {suffix}
+    </span>
+  );
+}
+
 export default function Home() {
+
+  const [openWhyFeature, setOpenWhyFeature] = useState<number | null>(null);
+  const [openWhySolar, setOpenWhySolar] = useState<number | null>(null);
+  const [activePartner, setActivePartner] = useState<string | null>(null);
 
   const [calculator, setCalculator] = useState({
     name: "",
@@ -78,15 +155,47 @@ export default function Home() {
 
         {/* Background */}
         <div className="absolute inset-0">
-
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_45%,rgba(245,158,11,0.22),transparent_30%)]" />
 
+          {/* Subtle depth behind the hero visual */}
           <div className="absolute -right-32 top-1/2 h-[600px] w-[600px] -translate-y-1/2 rounded-full border border-orange-400/20" />
-
           <div className="absolute -right-20 top-1/2 h-[450px] w-[450px] -translate-y-1/2 rounded-full border border-orange-400/10" />
 
-        </div>
+          {/* Single 3D Earth + Solar Panels image
+              No CSS animation — the complete visual is one image. */}
+          <div className="group absolute right-[-3%] top-1/2 z-20 hidden h-[680px] w-[680px] -translate-y-1/2 cursor-pointer lg:block">
+  <img
+    src="/hero-earth-solar.png"
+    alt=""
+    width="680"
+    height="680"
+    fetchPriority="high"
+    className="
+      h-full w-full object-contain
+      transition-all duration-700 ease-out
+      group-hover:scale-[1.07]
+      group-hover:drop-shadow-[0_0_35px_rgba(245,158,11,0.35)]
+    "
+    draggable={false}
+  />
+</div>
 
+          {/* Mobile */}
+          <div
+            className="pointer-events-none absolute bottom-[-35px] right-[-24%] z-[2] h-[390px] w-[390px] md:hidden"
+            aria-hidden="true"
+          >
+            <img
+              src="/hero-earth-solar.webp"
+              alt=""
+              width="390"
+              height="390"
+              fetchPriority="high"
+              className="h-full w-full object-contain"
+              draggable={false}
+            />
+          </div>
+        </div>
 
         {/* Hero Content */}
         <div className="relative z-10 mx-auto flex min-h-screen max-w-7xl items-center px-6 pb-20 pt-32 md:px-10 lg:px-12">
@@ -188,6 +297,41 @@ export default function Home() {
         </div>
 
 
+        {/* =========================
+            HERO ABSTRACT VISUAL
+            Clean original style — no Earth, no solar panels.
+        ========================= */}
+        <div
+          className="pointer-events-none absolute right-[-10%] top-1/2 z-[1] hidden h-[760px] w-[760px] -translate-y-1/2 md:block lg:right-[-4%] lg:h-[820px] lg:w-[820px]"
+          aria-hidden="true"
+        >
+          <div className="absolute inset-[18%] rounded-full bg-orange-400/10 blur-[90px]" />
+
+          <div className="absolute left-1/2 top-1/2 h-[58%] w-[58%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange-400/15" />
+          <div className="absolute left-1/2 top-1/2 h-[76%] w-[76%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange-400/15" />
+          <div className="absolute left-1/2 top-1/2 h-[94%] w-[94%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange-400/10" />
+
+          <div className="absolute left-1/2 top-1/2 h-[1px] w-[94%] -translate-x-1/2 bg-gradient-to-r from-transparent via-orange-400/30 to-transparent" />
+          <div className="absolute left-1/2 top-1/2 h-[94%] w-[1px] -translate-x-1/2 bg-gradient-to-b from-transparent via-orange-400/20 to-transparent" />
+
+          <div className="absolute left-[18%] top-[23%] h-1.5 w-1.5 rounded-full bg-orange-300 shadow-[0_0_18px_rgba(251,146,60,1)]" />
+          <div className="absolute right-[17%] top-[39%] h-1.5 w-1.5 rounded-full bg-orange-300 shadow-[0_0_18px_rgba(251,146,60,1)]" />
+          <div className="absolute bottom-[20%] left-[38%] h-1 w-1 rounded-full bg-orange-200 shadow-[0_0_14px_rgba(251,146,60,0.9)]" />
+
+          <div className="absolute left-[14%] top-[17%] h-px w-24 rotate-[32deg] bg-gradient-to-r from-transparent to-orange-400/25" />
+          <div className="absolute bottom-[19%] right-[14%] h-px w-28 -rotate-[25deg] bg-gradient-to-r from-transparent to-orange-400/20" />
+        </div>
+
+        {/* Mobile abstract visual */}
+        <div
+          className="pointer-events-none absolute -bottom-20 right-[-30%] z-[1] h-[430px] w-[430px] opacity-80 md:hidden"
+          aria-hidden="true"
+        >
+          <div className="absolute inset-[16%] rounded-full bg-orange-400/10 blur-[70px]" />
+          <div className="absolute left-1/2 top-1/2 h-[62%] w-[62%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange-400/15" />
+          <div className="absolute left-1/2 top-1/2 h-[82%] w-[82%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange-400/10" />
+        </div>
+
         {/* Scroll Indicator */}
         <div className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 text-white/40 md:flex">
 
@@ -249,7 +393,7 @@ export default function Home() {
       <div className="border-b border-black/10 py-7 sm:border-r sm:pr-8 lg:border-b-0">
 
         <p className="text-4xl font-semibold tracking-[-0.04em] text-neutral-950">
-          10+
+          <CountUp end={10} suffix="+" />
         </p>
 
         <p className="mt-2 text-xs uppercase tracking-[0.18em] text-neutral-400">
@@ -263,7 +407,7 @@ export default function Home() {
       <div className="border-b border-black/10 py-7 sm:pl-8 lg:border-b-0 lg:border-r">
 
         <p className="text-4xl font-semibold tracking-[-0.04em] text-neutral-950">
-          10K+
+          <CountUp end={10} suffix="K+" />
         </p>
 
         <p className="mt-2 text-xs uppercase tracking-[0.18em] text-neutral-400">
@@ -277,7 +421,7 @@ export default function Home() {
       <div className="border-b border-black/10 py-7 sm:pr-8 lg:border-b-0 lg:border-r lg:pl-8">
 
         <p className="text-4xl font-semibold tracking-[-0.04em] text-neutral-950">
-          100
+          <CountUp end={100} />
         </p>
 
         <p className="mt-2 text-xs uppercase tracking-[0.18em] text-neutral-400">
@@ -291,7 +435,7 @@ export default function Home() {
       <div className="py-7 sm:pl-8">
 
         <p className="text-4xl font-semibold tracking-[-0.04em] text-neutral-950">
-          60
+          <CountUp end={60} />
         </p>
 
         <p className="mt-2 text-xs uppercase tracking-[0.18em] text-neutral-400">
@@ -323,116 +467,109 @@ export default function Home() {
       {/* BENEFITS */}
       <div className="border-t border-black/10">
 
-        {/* 01 */}
-        <div className="group flex items-center justify-between border-b border-black/10 py-7">
+        {[
+          {
+            id: 1,
+            number: "01",
+            title: "Clean and Renewable",
+            image: "/why-solar/clean-renewable.png",
+            short: "Harness clean solar energy for a more sustainable future.",
+            detail: "Solar power uses a clean, renewable source of energy to help reduce dependence on conventional electricity and support a more sustainable future.",
+          },
+          {
+            id: 2,
+            number: "02",
+            title: "Energy Independence",
+            image: "/why-solar/energy-independence.png",
+            short: "Take greater control of your energy and electricity costs.",
+            detail: "Generate more of the electricity you need yourself, giving you greater control over your energy usage and long-term electricity costs.",
+          },
+          {
+            id: 3,
+            number: "03",
+            title: "Low Maintenance",
+            image: "/why-solar/low-maintenance.png",
+            short: "Solar systems designed for dependable and easy operation.",
+            detail: "Once installed correctly, solar systems require relatively little day-to-day attention while delivering dependable energy for years.",
+          },
+          {
+            id: 4,
+            number: "04",
+            title: "Solar Scalability",
+            image: "/why-solar/solar-scalability.png",
+            short: "Flexible solar solutions that can grow with your energy needs.",
+            detail: "Start with a system that fits your current requirements and scale your solar setup as your energy consumption grows.",
+          },
+        ].map((item) => {
+          const isOpen = openWhySolar === item.id;
 
-          <div className="flex items-center gap-7">
+          return (
+            <div
+              key={item.id}
+              className={`group border-b border-black/10 transition-all duration-500 ${
+                isOpen ? "bg-white/50" : ""
+              }`}
+            >
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                aria-label={`${isOpen ? "Close" : "Learn more about"} ${item.title}`}
+                onClick={() => setOpenWhySolar(isOpen ? null : item.id)}
+                className="grid w-full grid-cols-[32px_82px_1fr_24px] items-center gap-3 py-7 text-left md:grid-cols-[50px_120px_1fr_40px] md:gap-7 md:py-8"
+              >
+                <span className="text-xs text-neutral-300">
+                  {item.number}
+                </span>
 
-            <span className="text-xs text-neutral-300">
-              01
-            </span>
+                <div className="flex h-20 w-20 items-center justify-center md:h-24 md:w-24">
+                  <img
+                    src={item.image}
+                    alt={item.title}
+                    width="96"
+                    height="96"
+                    loading="lazy"
+                    decoding="async"
+                    className="h-full w-full object-contain drop-shadow-[0_10px_12px_rgba(0,0,0,0.14)] transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105"
+                  />
+                </div>
 
-            <div>
-              <h3 className="text-2xl font-medium tracking-tight text-neutral-950 transition-all duration-300 group-hover:translate-x-1 group-hover:text-orange-500 md:text-3xl">
-                Clean and Renewable
-              </h3>
+                <div>
+                  <h3 className={`text-xl font-medium tracking-tight text-neutral-950 transition-all duration-300 md:text-3xl ${
+                    isOpen ? "translate-x-1 text-orange-500" : "group-hover:translate-x-1 group-hover:text-orange-500"
+                  }`}>
+                    {item.title}
+                  </h3>
 
-              <p className="mt-2 max-w-xl text-sm leading-6 text-neutral-500">
-                Harness clean solar energy for a more sustainable future.
-              </p>
+                  <p className="mt-1.5 max-w-xl text-xs leading-5 text-neutral-500 md:mt-2 md:text-sm md:leading-6">
+                    {item.short}
+                  </p>
+                </div>
+
+                <span
+                  className={`flex h-8 w-8 items-center justify-center text-base text-neutral-300 transition-all duration-500 md:text-lg ${
+                    isOpen
+                      ? "rotate-45 text-orange-500"
+                      : "group-hover:translate-x-1 group-hover:text-orange-500"
+                  }`}
+                >
+                  ↗
+                </span>
+              </button>
+
+              <div
+                className={`grid transition-[grid-template-rows,opacity] duration-500 ease-out ${
+                  isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+                }`}
+              >
+                <div className="overflow-hidden pl-[47px] pr-8 md:pl-[197px] md:pr-[55px]">
+                  <p className="pb-7 text-xs leading-6 text-neutral-500 md:pb-8 md:text-sm md:leading-7">
+                    {item.detail}
+                  </p>
+                </div>
+              </div>
             </div>
-
-          </div>
-
-          <span className="ml-4 text-lg text-neutral-300 transition-all duration-300 group-hover:translate-x-1 group-hover:text-orange-500">
-            ↗
-          </span>
-
-        </div>
-
-
-        {/* 02 */}
-        <div className="group flex items-center justify-between border-b border-black/10 py-7">
-
-          <div className="flex items-center gap-7">
-
-            <span className="text-xs text-neutral-300">
-              02
-            </span>
-
-            <div>
-              <h3 className="text-2xl font-medium tracking-tight text-neutral-950 transition-all duration-300 group-hover:translate-x-1 group-hover:text-orange-500 md:text-3xl">
-                Energy Independence
-              </h3>
-
-              <p className="mt-2 max-w-xl text-sm leading-6 text-neutral-500">
-                Take greater control of your energy and electricity costs.
-              </p>
-            </div>
-
-          </div>
-
-          <span className="ml-4 text-lg text-neutral-300 transition-all duration-300 group-hover:translate-x-1 group-hover:text-orange-500">
-            ↗
-          </span>
-
-        </div>
-
-
-        {/* 03 */}
-        <div className="group flex items-center justify-between border-b border-black/10 py-7">
-
-          <div className="flex items-center gap-7">
-
-            <span className="text-xs text-neutral-300">
-              03
-            </span>
-
-            <div>
-              <h3 className="text-2xl font-medium tracking-tight text-neutral-950 transition-all duration-300 group-hover:translate-x-1 group-hover:text-orange-500 md:text-3xl">
-                Low Maintenance
-              </h3>
-
-              <p className="mt-2 max-w-xl text-sm leading-6 text-neutral-500">
-                Solar systems designed for dependable and easy operation.
-              </p>
-            </div>
-
-          </div>
-
-          <span className="ml-4 text-lg text-neutral-300 transition-all duration-300 group-hover:translate-x-1 group-hover:text-orange-500">
-            ↗
-          </span>
-
-        </div>
-
-
-        {/* 04 */}
-        <div className="group flex items-center justify-between py-7">
-
-          <div className="flex items-center gap-7">
-
-            <span className="text-xs text-neutral-300">
-              04
-            </span>
-
-            <div>
-              <h3 className="text-2xl font-medium tracking-tight text-neutral-950 transition-all duration-300 group-hover:translate-x-1 group-hover:text-orange-500 md:text-3xl">
-                Solar Scalability
-              </h3>
-
-              <p className="mt-2 max-w-xl text-sm leading-6 text-neutral-500">
-                Flexible solar solutions that can grow with your energy needs.
-              </p>
-            </div>
-
-          </div>
-
-          <span className="ml-4 text-lg text-neutral-300 transition-all duration-300 group-hover:translate-x-1 group-hover:text-orange-500">
-            ↗
-          </span>
-
-        </div>
+          );
+        })}
 
       </div>
 
@@ -448,191 +585,787 @@ export default function Home() {
 
 
 
+{/* SERVICES */}
 <section
   id="services"
-  style={{ contentVisibility: "auto", containIntrinsicSize: "800px" }}
-  className="relative overflow-hidden bg-neutral-950 px-6 py-28 md:px-10 lg:px-12"
+  style={{ contentVisibility: "auto", containIntrinsicSize: "1200px" }}
+  className="relative overflow-hidden bg-black py-28 text-white md:py-36"
 >
-  {/* Subtle sunlight */}
-  <div className="pointer-events-none absolute right-[8%] top-[15%] h-[420px] w-[420px] rounded-full bg-orange-400/15 blur-[110px]" />
+  {/* Ambient glow */}
+  <div className="pointer-events-none absolute left-[-15%] top-[10%] h-[500px] w-[500px] rounded-full bg-orange-500/[0.06] blur-[140px]" />
+  <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-orange-400/[0.05] blur-[140px]" />
 
-  <div className="pointer-events-none absolute right-[18%] top-[28%] h-[180px] w-[180px] rounded-full bg-orange-300/10 blur-[70px]" />
-
-  {/* Subtle sun ring */}
-  <div className="pointer-events-none absolute -right-32 top-1/2 h-[620px] w-[620px] -translate-y-1/2 rounded-full border border-orange-400/10" />
-
-  <div className="pointer-events-none absolute -right-10 top-1/2 h-[440px] w-[440px] -translate-y-1/2 rounded-full border border-orange-400/[0.06]" />
-
-
-  <div className="relative z-10 mx-auto max-w-7xl">
+  <div className="relative z-10 mx-auto max-w-7xl px-5 md:px-8">
 
     {/* HEADER */}
-    <div className="flex flex-col justify-between gap-8 md:flex-row md:items-end">
-
-      <div>
-
-        <p className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.3em] text-orange-400">
-          <span className="h-px w-8 bg-orange-400" />
-          Our Services
-        </p>
-
-        <h2 className="mt-5 max-w-3xl text-5xl font-semibold leading-[0.95] tracking-[-0.05em] text-white md:text-6xl lg:text-7xl">
-          Solar solutions
-          <br />
-          <span className="text-white/35">
-            for every energy need.
-          </span>
-        </h2>
-
+    <div className="mb-16 max-w-3xl md:mb-20">
+      <div className="mb-5 flex items-center gap-3">
+        <span className="h-px w-10 bg-orange-400" />
+        <span className="text-xs font-medium uppercase tracking-[0.35em] text-orange-400">
+          What We Offer
+        </span>
       </div>
 
+      <h2 className="text-4xl font-medium leading-[1.05] tracking-tight md:text-6xl">
+        Complete{" "}
+        <span className="text-orange-400">Solar Solutions</span>
+      </h2>
 
-      <p className="max-w-md text-base leading-7 text-white/45 md:text-lg">
-        From powering your home to supporting large-scale
-        energy requirements, we provide solar solutions
-        designed around your needs.
+      <p className="mt-6 max-w-2xl text-sm leading-7 text-white/45 md:text-base">
+        From homes to industries, we provide end-to-end solar solutions
+        designed for better savings, reliable performance and a cleaner future.
       </p>
-
     </div>
 
-
-    {/* SERVICES LIST */}
-    <div className="mt-20 border-t border-white/10">
-
+    {/* SERVICES GRID */}
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 
       {/* SERVICE 01 */}
-      <div className="group grid gap-6 border-b border-white/10 py-10 md:grid-cols-[70px_1fr_50px] md:items-center">
+      <a
+        href="#quote"
+        className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-6 transition-all duration-500 hover:-translate-y-1 hover:border-orange-400/40 hover:bg-white/[0.055]"
+      >
+        <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-orange-400/[0.07] blur-3xl transition-all duration-500 group-hover:bg-orange-400/[0.14]" />
 
-        <span className="text-sm text-white/25">
-          01
-        </span>
+        <div className="relative flex h-52 items-center justify-center">
+          <img
+            src="/services/rooftop-3d.png"
+            width="176"
+            height="176"
+            alt="Rooftop Solar"
+            className="h-44 w-44 object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:-translate-y-3 group-hover:scale-110"
+          />
 
-        <div>
-
-          <h3 className="text-3xl font-medium tracking-tight text-white transition-all duration-300 group-hover:translate-x-2 group-hover:text-orange-400 md:text-4xl">
-            Solar for Home Energy
-          </h3>
-
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/40 md:text-base">
-            Reliable solar energy solutions designed to help
-            homes generate clean power and reduce electricity costs.
-          </p>
-
+          <span className="absolute left-0 top-0 text-xs text-white/25">
+            01
+          </span>
         </div>
 
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-white/50 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
-          ↗
-        </div>
-
-      </div>
-
-
-      {/* SERVICE 02 */}
-      <div className="group grid gap-6 border-b border-white/10 py-10 md:grid-cols-[70px_1fr_50px] md:items-center">
-
-        <span className="text-sm text-white/25">
-          02
-        </span>
-
-        <div>
-
-          <h3 className="text-3xl font-medium tracking-tight text-white transition-all duration-300 group-hover:translate-x-2 group-hover:text-orange-400 md:text-4xl">
-            Solar for Business
-          </h3>
-
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/40 md:text-base">
-            Smart solar solutions for businesses looking to
-            manage energy costs and build a more sustainable future.
-          </p>
-
-        </div>
-
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-white/50 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
-          ↗
-        </div>
-
-      </div>
-
-
-      {/* SERVICE 03 */}
-      <div className="group grid gap-6 border-b border-white/10 py-10 md:grid-cols-[70px_1fr_50px] md:items-center">
-
-        <span className="text-sm text-white/25">
-          03
-        </span>
-
-        <div>
-
-          <h3 className="text-3xl font-medium tracking-tight text-white transition-all duration-300 group-hover:translate-x-2 group-hover:text-orange-400 md:text-4xl">
-            Ground Mount Solar
-          </h3>
-
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/40 md:text-base">
-            Efficient ground-mounted solar systems designed
-            for larger spaces and high energy generation requirements.
-          </p>
-
-        </div>
-
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-white/50 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
-          ↗
-        </div>
-
-      </div>
-
-
-      {/* SERVICE 04 */}
-      <div className="group grid gap-6 border-b border-white/10 py-10 md:grid-cols-[70px_1fr_50px] md:items-center">
-
-        <span className="text-sm text-white/25">
-          04
-        </span>
-
-        <div>
-
-          <h3 className="text-3xl font-medium tracking-tight text-white transition-all duration-300 group-hover:translate-x-2 group-hover:text-orange-400 md:text-4xl">
+        <div className="relative">
+          <h3 className="text-2xl font-medium tracking-tight">
             Rooftop Solar
           </h3>
 
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-white/40 md:text-base">
-            Customized rooftop solar systems that make smart
-            use of available space while generating clean energy.
+          <p className="mt-3 text-sm leading-6 text-white/40">
+            Efficient rooftop solar solutions for homes to reduce electricity
+            bills and achieve energy independence.
           </p>
 
+          <div className="mt-6 flex items-center justify-between">
+            <span className="text-sm text-white/60 transition-colors group-hover:text-orange-400">
+              Explore Service
+            </span>
+
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
+              ↗
+            </span>
+          </div>
         </div>
+      </a>
 
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/10 text-white/50 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
-          ↗
-        </div>
-
-      </div>
-
-    </div>
-
-
-    {/* BOTTOM CTA */}
-    <div className="mt-12 flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-
-      <p className="max-w-lg text-sm leading-6 text-white/40">
-        Looking for the right solar solution?
-        Let’s find what works best for your energy needs.
-      </p>
-
+      {/* SERVICE 02 */}
       <a
         href="#quote"
-        className="group flex w-fit items-center gap-3 rounded-full bg-white px-6 py-3.5 text-sm font-medium text-black transition-all duration-300 hover:bg-orange-400"
+        className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-6 transition-all duration-500 hover:-translate-y-1 hover:border-orange-400/40 hover:bg-white/[0.055]"
       >
-        Get a Free Quote
+        <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-orange-400/[0.07] blur-3xl transition-all duration-500 group-hover:bg-orange-400/[0.14]" />
 
-        <span className="transition-transform duration-300 group-hover:translate-x-1">
-          ↗
-        </span>
+        <div className="relative flex h-52 items-center justify-center">
+          <img
+            src="/services/industrial-solar-3d.png"
+            width="176"
+            height="176"
+            alt="Industrial Solar Solutions"
+            className="h-44 w-44 object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:-translate-y-3 group-hover:scale-110"
+          />
+
+          <span className="absolute left-0 top-0 text-xs text-white/25">
+            02
+          </span>
+        </div>
+
+        <div className="relative">
+          <h3 className="text-2xl font-medium tracking-tight">
+            Commercial & Industrial
+          </h3>
+
+          <p className="mt-3 text-sm leading-6 text-white/40">
+            High-capacity solar systems designed for factories, offices,
+            businesses and large-scale energy requirements.
+          </p>
+
+          <div className="mt-6 flex items-center justify-between">
+            <span className="text-sm text-white/60 transition-colors group-hover:text-orange-400">
+              Explore Service
+            </span>
+
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
+              ↗
+            </span>
+          </div>
+        </div>
+      </a>
+
+      {/* SERVICE 03 */}
+      <a
+        href="#quote"
+        className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-6 transition-all duration-500 hover:-translate-y-1 hover:border-orange-400/40 hover:bg-white/[0.055]"
+      >
+        <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-orange-400/[0.07] blur-3xl transition-all duration-500 group-hover:bg-orange-400/[0.14]" />
+
+        <div className="relative flex h-52 items-center justify-center">
+          <img
+            src="/services/solar-design-3d.png"
+            width="176"
+            height="176"
+            alt="Solar System Design"
+            className="h-44 w-44 object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:-translate-y-3 group-hover:scale-110"
+          />
+
+          <span className="absolute left-0 top-0 text-xs text-white/25">
+            03
+          </span>
+        </div>
+
+        <div className="relative">
+          <h3 className="text-2xl font-medium tracking-tight">
+            Solar System Design
+          </h3>
+
+          <p className="mt-3 text-sm leading-6 text-white/40">
+            Expert engineering, site analysis and customized system design
+            built around your energy requirements.
+          </p>
+
+          <div className="mt-6 flex items-center justify-between">
+            <span className="text-sm text-white/60 transition-colors group-hover:text-orange-400">
+              Explore Service
+            </span>
+
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
+              ↗
+            </span>
+          </div>
+        </div>
+      </a>
+
+      {/* SERVICE 04 */}
+      <a
+        href="#quote"
+        className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-6 transition-all duration-500 hover:-translate-y-1 hover:border-orange-400/40 hover:bg-white/[0.055]"
+      >
+        <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-orange-400/[0.07] blur-3xl transition-all duration-500 group-hover:bg-orange-400/[0.14]" />
+
+        <div className="relative flex h-52 items-center justify-center">
+          <img
+            src="/services/rooftop-commercial-3d.png"
+            width="176"
+            height="176"
+            alt="Rooftop and Commercial Solar"
+            className="h-44 w-44 object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:-translate-y-3 group-hover:scale-110"
+          />
+
+          <span className="absolute left-0 top-0 text-xs text-white/25">
+            04
+          </span>
+        </div>
+
+        <div className="relative">
+          <h3 className="text-2xl font-medium tracking-tight">
+            Rooftop & Commercial
+          </h3>
+
+          <p className="mt-3 text-sm leading-6 text-white/40">
+            Complete rooftop solar installation for residential,
+            commercial and institutional properties.
+          </p>
+
+          <div className="mt-6 flex items-center justify-between">
+            <span className="text-sm text-white/60 transition-colors group-hover:text-orange-400">
+              Explore Service
+            </span>
+
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
+              ↗
+            </span>
+          </div>
+        </div>
+      </a>
+
+      {/* SERVICE 05 */}
+      <a
+        href="#quote"
+        className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-6 transition-all duration-500 hover:-translate-y-1 hover:border-orange-400/40 hover:bg-white/[0.055]"
+      >
+        <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-orange-400/[0.07] blur-3xl transition-all duration-500 group-hover:bg-orange-400/[0.14]" />
+
+        <div className="relative flex h-52 items-center justify-center">
+          <img
+            src="/services/subsidy-netmetering-3d.png"
+            width="176"
+            height="176"
+            alt="Solar Subsidy and Net Metering"
+            className="h-44 w-44 object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:-translate-y-3 group-hover:scale-110"
+          />
+
+          <span className="absolute left-0 top-0 text-xs text-white/25">
+            05
+          </span>
+        </div>
+
+        <div className="relative">
+          <h3 className="text-2xl font-medium tracking-tight">
+            Subsidy & Net Metering
+          </h3>
+
+          <p className="mt-3 text-sm leading-6 text-white/40">
+            Complete assistance with solar subsidy schemes, documentation
+            and net metering procedures.
+          </p>
+
+          <div className="mt-6 flex items-center justify-between">
+            <span className="text-sm text-white/60 transition-colors group-hover:text-orange-400">
+              Explore Service
+            </span>
+
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
+              ↗
+            </span>
+          </div>
+        </div>
+      </a>
+
+      {/* SERVICE 06 */}
+      <a
+        href="#quote"
+        className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-6 transition-all duration-500 hover:-translate-y-1 hover:border-orange-400/40 hover:bg-white/[0.055]"
+      >
+        <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-orange-400/[0.07] blur-3xl transition-all duration-500 group-hover:bg-orange-400/[0.14]" />
+
+        <div className="relative flex h-52 items-center justify-center">
+          <img
+            src="/services/solar-maintenance-3d.png"
+            width="176"
+            height="176"
+            alt="Solar Panel Cleaning and Maintenance"
+            className="h-44 w-44 object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:-translate-y-3 group-hover:scale-110"
+          />
+
+          <span className="absolute left-0 top-0 text-xs text-white/25">
+            06
+          </span>
+        </div>
+
+        <div className="relative">
+          <h3 className="text-2xl font-medium tracking-tight">
+            Cleaning & Maintenance
+          </h3>
+
+          <p className="mt-3 text-sm leading-6 text-white/40">
+            Professional solar panel cleaning and maintenance to maintain
+            long-term system performance.
+          </p>
+
+          <div className="mt-6 flex items-center justify-between">
+            <span className="text-sm text-white/60 transition-colors group-hover:text-orange-400">
+              Explore Service
+            </span>
+
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
+              ↗
+            </span>
+          </div>
+        </div>
+      </a>
+
+      {/* SERVICE 07 */}
+      <a
+        href="#quote"
+        className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-6 transition-all duration-500 hover:-translate-y-1 hover:border-orange-400/40 hover:bg-white/[0.055]"
+      >
+        <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-orange-400/[0.07] blur-3xl transition-all duration-500 group-hover:bg-orange-400/[0.14]" />
+
+        <div className="relative flex h-52 items-center justify-center">
+          <img
+            src="/services/hybrid-solar-3d.png"
+            width="176"
+            height="176"
+            alt="Hybrid Solar System"
+            className="h-44 w-44 object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:-translate-y-3 group-hover:scale-110"
+          />
+
+          <span className="absolute left-0 top-0 text-xs text-white/25">
+            07
+          </span>
+        </div>
+
+        <div className="relative">
+          <h3 className="text-2xl font-medium tracking-tight">
+            Hybrid Solar System
+          </h3>
+
+          <p className="mt-3 text-sm leading-6 text-white/40">
+            Integrated solar, grid and battery solutions for higher solar
+            utilization and reliable backup power.
+          </p>
+
+          <div className="mt-6 flex items-center justify-between">
+            <span className="text-sm text-white/60 transition-colors group-hover:text-orange-400">
+              Explore Service
+            </span>
+
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
+              ↗
+            </span>
+          </div>
+        </div>
+      </a>
+
+      {/* SERVICE 08 */}
+      <a
+        href="#quote"
+        className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-6 transition-all duration-500 hover:-translate-y-1 hover:border-orange-400/40 hover:bg-white/[0.055]"
+      >
+        <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-orange-400/[0.07] blur-3xl transition-all duration-500 group-hover:bg-orange-400/[0.14]" />
+
+        <div className="relative flex h-52 items-center justify-center">
+          <img
+            src="/services/bess-3d.png"
+            width="176"
+            height="176"
+            alt="Battery Energy Storage System"
+            className="h-44 w-44 object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:-translate-y-3 group-hover:scale-110"
+          />
+
+          <span className="absolute left-0 top-0 text-xs text-white/25">
+            08
+          </span>
+        </div>
+
+        <div className="relative">
+          <h3 className="text-2xl font-medium tracking-tight">
+            Battery Energy Storage
+          </h3>
+
+          <p className="mt-3 text-sm leading-6 text-white/40">
+            Advanced energy storage solutions for backup power, peak demand
+            management and better energy reliability.
+          </p>
+
+          <div className="mt-6 flex items-center justify-between">
+            <span className="text-sm text-white/60 transition-colors group-hover:text-orange-400">
+              Explore Service
+            </span>
+
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
+              ↗
+            </span>
+          </div>
+        </div>
+      </a>
+
+      {/* SERVICE 09 */}
+      <a
+        href="#quote"
+        className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-6 transition-all duration-500 hover:-translate-y-1 hover:border-orange-400/40 hover:bg-white/[0.055]"
+      >
+        <div className="absolute right-0 top-0 h-40 w-40 rounded-full bg-orange-400/[0.07] blur-3xl transition-all duration-500 group-hover:bg-orange-400/[0.14]" />
+
+        <div className="relative flex h-52 items-center justify-center">
+          <img
+            src="/services/solar-park-3d.png"
+            width="176"
+            height="176"
+            alt="Solar Park"
+            className="h-44 w-44 object-contain drop-shadow-[0_20px_25px_rgba(0,0,0,0.5)] transition-all duration-500 group-hover:-translate-y-3 group-hover:scale-110"
+          />
+
+          <span className="absolute left-0 top-0 text-xs text-white/25">
+            09
+          </span>
+        </div>
+
+        <div className="relative">
+          <h3 className="text-2xl font-medium tracking-tight">
+            Solar Park
+          </h3>
+
+          <p className="mt-3 text-sm leading-6 text-white/40">
+            Large-scale solar power projects engineered for efficient
+            electricity generation and reliable grid connectivity.
+          </p>
+
+          <div className="mt-6 flex items-center justify-between">
+            <span className="text-sm text-white/60 transition-colors group-hover:text-orange-400">
+              Explore Service
+            </span>
+
+            <span className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/60 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
+              ↗
+            </span>
+          </div>
+        </div>
       </a>
 
     </div>
 
+    {/* BOTTOM CTA */}
+    <div className="mt-8 flex flex-col gap-6 rounded-3xl border border-orange-400/20 bg-orange-400/[0.04] p-7 md:flex-row md:items-center md:justify-between md:p-9">
+      <div>
+        <p className="text-xs uppercase tracking-[0.3em] text-orange-400">
+          Let’s build a brighter tomorrow
+        </p>
+
+        <h3 className="mt-2 text-2xl font-medium md:text-3xl">
+          Ready to switch to <span className="text-orange-400">solar?</span>
+        </h3>
+
+        <p className="mt-2 text-sm text-white/40">
+          Get expert guidance and the right solar solution for your needs.
+        </p>
+      </div>
+
+      <a
+        href="#quote"
+        className="group flex w-fit shrink-0 items-center gap-3 rounded-full bg-white px-6 py-3.5 text-sm font-medium text-black transition-all duration-300 hover:bg-orange-400 hover:text-white"
+      >
+        Get a Free Quote
+        <span className="transition-transform duration-300 group-hover:translate-x-1">
+          →
+        </span>
+      </a>
+    </div>
+
   </div>
 </section>
+
+{/* TRUSTED BRANDS */}
+
+      <section
+        id="brands"
+        style={{ contentVisibility: "auto", containIntrinsicSize: "600px" }}
+        className="relative overflow-hidden bg-white py-24 text-neutral-950"
+      >
+        <div className="mx-auto max-w-7xl px-6 md:px-8">
+          <div className="mx-auto max-w-3xl text-center">
+            <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-orange-500">
+              Trusted Brands
+            </p>
+            <h2 className="mt-4 text-4xl font-medium tracking-[-0.04em] md:text-5xl">
+              We Work With{" "}
+              <span className="text-orange-500">Trusted Names</span>
+            </h2>
+            <p className="mx-auto mt-5 max-w-2xl text-sm leading-6 text-neutral-500 md:text-base">
+              We partner with leading solar and energy brands to deliver reliable,
+              high-performance solutions for every project.
+            </p>
+          </div>
+        </div>
+
+        {/* Continuous single-line logo marquee */}
+        <div className="relative mt-16 overflow-hidden">
+          {/* Soft edge fades */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-8 bg-gradient-to-r from-white/55 to-transparent md:w-12" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-white/55 to-transparent md:w-12" />
+
+          <div className="dahaman-brands-track flex w-max gap-4 px-4 hover:[animation-play-state:paused] md:gap-5">
+            {[
+              ["/brands/adani.png", "Adani"],
+              ["/brands/waaree.png", "Waaree"],
+              ["/brands/vikram-solar.png", "Vikram Solar"],
+              ["/brands/avaada.png", "Avaada"],
+              ["/brands/luminous.png", "Luminous"],
+              ["/brands/polycab.png", "Polycab"],
+              ["/brands/sungrow.png", "Sungrow"],
+              ["/brands/solis.png", "Solis"],
+              ["/brands/k-solar.png", "K-Solar"],
+            ].map(([src, alt]) => (
+              <div
+                key={`brand-a-${alt}`}
+                className="h-[142px] w-[220px] shrink-0 overflow-hidden rounded-2xl border border-black/15 bg-[#090807] shadow-[0_12px_30px_rgba(0,0,0,0.16)] md:h-[154px] md:w-[250px]"
+              >
+                <img
+                  src={src}
+                  alt={alt}
+                  width="250"
+                  height="154"
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            ))}
+
+            {/* Exact duplicate = seamless loop */}
+            {[
+              ["/brands/adani.png", "Adani"],
+              ["/brands/waaree.png", "Waaree"],
+              ["/brands/vikram-solar.png", "Vikram Solar"],
+              ["/brands/avaada.png", "Avaada"],
+              ["/brands/luminous.png", "Luminous"],
+              ["/brands/polycab.png", "Polycab"],
+              ["/brands/sungrow.png", "Sungrow"],
+              ["/brands/solis.png", "Solis"],
+              ["/brands/k-solar.png", "K-Solar"],
+            ].map(([src, alt]) => (
+              <div
+                key={`brand-b-${alt}`}
+                aria-hidden="true"
+                className="h-[142px] w-[220px] shrink-0 overflow-hidden rounded-2xl border border-black/15 bg-[#090807] shadow-[0_12px_30px_rgba(0,0,0,0.16)] md:h-[154px] md:w-[250px]"
+              >
+                <img
+                  src={src}
+                  alt=""
+                  width="250"
+                  height="154"
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <style jsx>{`
+          .dahaman-brands-track {
+            animation: dahamanBrandsMarquee 34s linear infinite;
+            will-change: transform;
+          }
+
+          @keyframes dahamanBrandsMarquee {
+            from {
+              transform: translateX(0);
+            }
+            to {
+              transform: translateX(calc(-50% - 8px));
+            }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .dahaman-brands-track {
+              animation: none;
+            }
+          }
+        `}</style>
+      </section>
+
+      {/* ==================== PARTNERS & SPONSORS ==================== */}
+      <section
+        id="partners"
+        style={{ contentVisibility: "auto", containIntrinsicSize: "700px" }}
+        className="relative overflow-hidden bg-[#fafafa] py-24 md:py-32"
+      >
+        <div className="pointer-events-none absolute inset-0">
+          <div className="absolute left-1/2 top-0 h-[520px] w-[900px] -translate-x-1/2 rounded-full bg-orange-400/[0.035] blur-3xl" />
+        </div>
+
+        <div className="relative mx-auto max-w-7xl px-5 md:px-8">
+          {/* Heading */}
+          <div className="mx-auto mb-14 max-w-2xl text-center">
+            <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-400/[0.06] px-4 py-2 text-xs font-medium uppercase tracking-[0.18em] text-orange-500">
+              Our Network
+            </span>
+
+            <h2 className="text-4xl font-semibold tracking-tight text-black md:text-5xl">
+              Partners &amp; Sponsors
+            </h2>
+
+            <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-black/50 md:text-base">
+              Proud to work with trusted organizations and institutions
+              who support our journey towards a cleaner energy future.
+            </p>
+          </div>
+
+          {/* Moving partner wall */}
+          <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
+            <div className="dahaman-partners-track flex w-max gap-5 py-3 md:gap-7">
+              {[
+                {
+                  name: "M.G. College of Pharmaceutical Sciences",
+                  image: "/clients/mgcps.jpeg",
+                },
+                {
+                  name: "Oriana Power",
+                  image: "/clients/oriana-power.jpeg",
+                },
+                {
+                  name: "Larsen & Toubro",
+                  image: "/clients/larsen-toubro.jpeg",
+                },
+                {
+                  name: "Mahatma Gandhi Engineering College",
+                  image: "/clients/mahatma-gandhi-engineering.jpeg",
+                },
+                {
+                  name: "Jaipur Engineering College",
+                  image: "/clients/jaipur-engineering-college.jpeg",
+                },
+                {
+                  name: "Jaipur College of Pharmacy",
+                  image: "/clients/jaipur-college-pharmacy.jpeg",
+                },
+                {
+                  name: "National Sample Survey Office",
+                  image: "/clients/nsso.jpeg",
+                },
+              ]
+                .concat([
+                  {
+                    name: "M.G. College of Pharmaceutical Sciences",
+                    image: "/clients/mgcps.jpeg",
+                  },
+                  {
+                    name: "Oriana Power",
+                    image: "/clients/oriana-power.jpeg",
+                  },
+                  {
+                    name: "Larsen & Toubro",
+                    image: "/clients/larsen-toubro.jpeg",
+                  },
+                  {
+                    name: "Mahatma Gandhi Engineering College",
+                    image: "/clients/mahatma-gandhi-engineering.jpeg",
+                  },
+                  {
+                    name: "Jaipur Engineering College",
+                    image: "/clients/jaipur-engineering-college.jpeg",
+                  },
+                  {
+                    name: "Jaipur College of Pharmacy",
+                    image: "/clients/jaipur-college-pharmacy.jpeg",
+                  },
+                  {
+                    name: "National Sample Survey Office",
+                    image: "/clients/nsso.jpeg",
+                  },
+                ])
+                .map((partner, index) => (
+                  <button
+                    key={`${partner.name}-${index}`}
+                    type="button"
+                    aria-pressed={activePartner === partner.name}
+                    onClick={() =>
+                      setActivePartner((current) =>
+                        current === partner.name ? null : partner.name
+                      )
+                    }
+                    className={`group relative flex h-[180px] w-[290px] shrink-0 items-center justify-center overflow-hidden rounded-[32px] border bg-white px-8 text-left shadow-[0_12px_40px_rgba(0,0,0,0.05)] outline-none transition-all duration-500 focus-visible:ring-2 focus-visible:ring-orange-400 md:h-[190px] md:w-[330px] ${
+                      activePartner === partner.name
+                        ? "border-orange-400/50 shadow-[0_22px_60px_rgba(245,158,11,0.14)]"
+                        : "border-black/[0.06] hover:-translate-y-1 hover:border-orange-400/25 hover:shadow-[0_20px_50px_rgba(0,0,0,0.09)]"
+                    }`}
+                  >
+                    <span className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(245,158,11,0.10),transparent_62%)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+
+                    <span
+                      className={`pointer-events-none absolute right-5 top-5 rounded-full border px-2.5 py-1 text-[9px] font-medium uppercase tracking-[0.16em] transition-all duration-300 ${
+                        activePartner === partner.name
+                          ? "border-orange-400/30 bg-orange-400/[0.08] text-orange-500 opacity-100"
+                          : "border-black/10 text-black/30 opacity-0 group-hover:opacity-100"
+                      }`}
+                    >
+                      Selected
+                    </span>
+
+                    <img
+                      src={partner.image}
+                      alt={partner.name}
+                      width="330"
+                      height="190"
+                      className="relative z-10 max-h-[115px] max-w-[82%] object-contain transition-all duration-500 ease-out group-hover:scale-[1.07]"
+                      loading="lazy"
+                      decoding="async"
+                    />
+
+                    <span
+                      className={`absolute bottom-0 left-1/2 h-[2px] -translate-x-1/2 bg-orange-400 transition-all duration-500 ${
+                        activePartner === partner.name
+                          ? "w-20"
+                          : "w-0 group-hover:w-16"
+                      }`}
+                    />
+                  </button>
+                ))}
+            </div>
+          </div>
+
+          {/* Selected partner spotlight */}
+          <div
+            className={`mx-auto overflow-hidden transition-all duration-500 ease-out ${
+              activePartner ? "mt-8 max-h-40 opacity-100" : "mt-0 max-h-0 opacity-0"
+            }`}
+            aria-live="polite"
+          >
+            {activePartner && (
+              <div className="mx-auto flex max-w-3xl items-center gap-5 rounded-3xl border border-orange-400/15 bg-white px-6 py-5 shadow-[0_12px_40px_rgba(0,0,0,0.05)] md:px-8">
+                <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-2xl border border-black/[0.06] bg-[#fafafa] p-2">
+                  <img
+                    src={
+                      [
+                        ["M.G. College of Pharmaceutical Sciences", "/clients/mgcps.jpeg"],
+                        ["Oriana Power", "/clients/oriana-power.jpeg"],
+                        ["Larsen & Toubro", "/clients/larsen-toubro.jpeg"],
+                        ["Mahatma Gandhi Engineering College", "/clients/mahatma-gandhi-engineering.jpeg"],
+                        ["Jaipur Engineering College", "/clients/jaipur-engineering-college.jpeg"],
+                        ["Jaipur College of Pharmacy", "/clients/jaipur-college-pharmacy.jpeg"],
+                        ["National Sample Survey Office", "/clients/nsso.jpeg"],
+                      ].find(([name]) => name === activePartner)?.[1] ?? "/dahaman-logo.png"
+                    }
+                    alt=""
+                    width="80"
+                    height="64"
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-orange-500">
+                    Network Partner
+                  </p>
+                  <p className="mt-1 text-base font-medium tracking-tight text-neutral-950 md:text-lg">
+                    {activePartner}
+                  </p>
+                </div>
+                <span className="hidden h-10 w-10 shrink-0 items-center justify-center rounded-full border border-black/10 text-black/40 md:flex">
+                  ↗
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <style jsx>{`
+          .dahaman-partners-track {
+            animation: dahamanPartnerMarquee 38s linear infinite;
+            will-change: transform;
+          }
+
+          .dahaman-partners-track:hover {
+            animation-play-state: paused;
+          }
+
+          @keyframes dahamanPartnerMarquee {
+            from {
+              transform: translateX(0);
+            }
+            to {
+              transform: translateX(calc(-50% - 10px));
+            }
+          }
+
+          @media (max-width: 767px) {
+            .dahaman-partners-track {
+              animation-duration: 30s;
+            }
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .dahaman-partners-track {
+              animation: none;
+            }
+          }
+        `}</style>
+      </section>
+      {/* ==================== END PARTNERS & SPONSORS ==================== */}
+
       {/* =========================
     WHY CHOOSE US
 ========================= */}
@@ -687,124 +1420,211 @@ export default function Home() {
     ========================= */}
     <div className="mt-20 border-t border-black/10">
 
-
       {/* FEATURE 01 */}
-      <div className="group grid gap-6 border-b border-black/10 py-10 md:grid-cols-[80px_1fr_60px] md:items-center">
+      <div
+        className={`group border-b border-black/10 transition-all duration-500 ${
+          openWhyFeature === 1 ? "bg-white/50" : ""
+        }`}
+      >
+        <div className="grid gap-6 py-10 md:grid-cols-[80px_1fr_60px] md:items-center">
+          <span className="text-sm text-neutral-300">01</span>
 
-        <span className="text-sm text-neutral-300">
-          01
-        </span>
+          <div>
+            <img
+              src="/why-us/01-quality-services.png"
+              alt=""
+              width="64"
+              height="64"
+              className="mb-5 h-16 w-16 object-contain transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105"
+            />
+            <h3 className="text-3xl font-medium tracking-tight text-neutral-950 transition-all duration-300 group-hover:translate-x-2 group-hover:text-orange-500 md:text-4xl">
+              Quality Services
+            </h3>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 md:text-base">
+              We focus on delivering quality solar services designed around your specific energy requirements.
+            </p>
+          </div>
 
-
-        <div>
-
-          <h3 className="text-3xl font-medium tracking-tight text-neutral-950 transition-all duration-300 group-hover:translate-x-2 group-hover:text-orange-500 md:text-4xl">
-            Quality Services
-          </h3>
-
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 md:text-base">
-            We focus on delivering quality solar services designed
-            around your specific energy requirements.
-          </p>
-
+          <button
+            type="button"
+            aria-expanded={openWhyFeature === 1}
+            aria-label="Learn more about Quality Services"
+            onClick={() => setOpenWhyFeature(openWhyFeature === 1 ? null : 1)}
+            className={`flex h-11 w-11 items-center justify-center rounded-full border text-neutral-500 transition-all duration-300 hover:border-orange-400 hover:bg-orange-400 hover:text-black ${
+              openWhyFeature === 1 ? "rotate-45 border-orange-400 bg-orange-400 text-black" : "border-black/10"
+            }`}
+          >
+            ↗
+          </button>
         </div>
 
-
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-black/10 text-neutral-500 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
-          ↗
+        <div
+          className={`grid transition-[grid-template-rows,opacity] duration-500 ease-out ${
+            openWhyFeature === 1 ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
+        >
+          <div className="overflow-hidden md:pl-[140px] md:pr-[100px]">
+            <p className="pb-8 text-sm leading-7 text-neutral-500 md:text-base">
+              From system planning to installation, we focus on dependable workmanship, quality components and solutions built around your actual energy needs.
+            </p>
+          </div>
         </div>
-
       </div>
-
 
       {/* FEATURE 02 */}
-      <div className="group grid gap-6 border-b border-black/10 py-10 md:grid-cols-[80px_1fr_60px] md:items-center">
+      <div
+        className={`group border-b border-black/10 transition-all duration-500 ${
+          openWhyFeature === 2 ? "bg-white/50" : ""
+        }`}
+      >
+        <div className="grid gap-6 py-10 md:grid-cols-[80px_1fr_60px] md:items-center">
+          <span className="text-sm text-neutral-300">02</span>
 
-        <span className="text-sm text-neutral-300">
-          02
-        </span>
+          <div>
+            <img
+              src="/why-us/02-expert-workers.png"
+              alt=""
+              width="64"
+              height="64"
+              className="mb-5 h-16 w-16 object-contain transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105"
+            />
+            <h3 className="text-3xl font-medium tracking-tight text-neutral-950 transition-all duration-300 group-hover:translate-x-2 group-hover:text-orange-500 md:text-4xl">
+              Expert Workers
+            </h3>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 md:text-base">
+              Skilled professionals working to provide efficient and dependable solar solutions.
+            </p>
+          </div>
 
-
-        <div>
-
-          <h3 className="text-3xl font-medium tracking-tight text-neutral-950 transition-all duration-300 group-hover:translate-x-2 group-hover:text-orange-500 md:text-4xl">
-            Expert Workers
-          </h3>
-
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 md:text-base">
-            Skilled professionals working to provide efficient and
-            dependable solar solutions.
-          </p>
-
+          <button
+            type="button"
+            aria-expanded={openWhyFeature === 2}
+            aria-label="Learn more about Expert Workers"
+            onClick={() => setOpenWhyFeature(openWhyFeature === 2 ? null : 2)}
+            className={`flex h-11 w-11 items-center justify-center rounded-full border text-neutral-500 transition-all duration-300 hover:border-orange-400 hover:bg-orange-400 hover:text-black ${
+              openWhyFeature === 2 ? "rotate-45 border-orange-400 bg-orange-400 text-black" : "border-black/10"
+            }`}
+          >
+            ↗
+          </button>
         </div>
 
-
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-black/10 text-neutral-500 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
-          ↗
+        <div
+          className={`grid transition-[grid-template-rows,opacity] duration-500 ease-out ${
+            openWhyFeature === 2 ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
+        >
+          <div className="overflow-hidden md:pl-[140px] md:pr-[100px]">
+            <p className="pb-8 text-sm leading-7 text-neutral-500 md:text-base">
+              Our experienced team handles each project with attention to installation quality, system performance and long-term reliability.
+            </p>
+          </div>
         </div>
-
       </div>
-
 
       {/* FEATURE 03 */}
-      <div className="group grid gap-6 border-b border-black/10 py-10 md:grid-cols-[80px_1fr_60px] md:items-center">
+      <div
+        className={`group border-b border-black/10 transition-all duration-500 ${
+          openWhyFeature === 3 ? "bg-white/50" : ""
+        }`}
+      >
+        <div className="grid gap-6 py-10 md:grid-cols-[80px_1fr_60px] md:items-center">
+          <span className="text-sm text-neutral-300">03</span>
 
-        <span className="text-sm text-neutral-300">
-          03
-        </span>
+          <div>
+            <img
+              src="/why-us/03-free-consultation.png"
+              alt=""
+              width="64"
+              height="64"
+              className="mb-5 h-16 w-16 object-contain transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105"
+            />
+            <h3 className="text-3xl font-medium tracking-tight text-neutral-950 transition-all duration-300 group-hover:translate-x-2 group-hover:text-orange-500 md:text-4xl">
+              Free Consultation
+            </h3>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 md:text-base">
+              Get guidance from our team to understand the solar solution that fits your energy needs.
+            </p>
+          </div>
 
-
-        <div>
-
-          <h3 className="text-3xl font-medium tracking-tight text-neutral-950 transition-all duration-300 group-hover:translate-x-2 group-hover:text-orange-500 md:text-4xl">
-            Free Consultation
-          </h3>
-
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 md:text-base">
-            Get guidance from our team to understand the solar
-            solution that fits your energy needs.
-          </p>
-
+          <button
+            type="button"
+            aria-expanded={openWhyFeature === 3}
+            aria-label="Learn more about Free Consultation"
+            onClick={() => setOpenWhyFeature(openWhyFeature === 3 ? null : 3)}
+            className={`flex h-11 w-11 items-center justify-center rounded-full border text-neutral-500 transition-all duration-300 hover:border-orange-400 hover:bg-orange-400 hover:text-black ${
+              openWhyFeature === 3 ? "rotate-45 border-orange-400 bg-orange-400 text-black" : "border-black/10"
+            }`}
+          >
+            ↗
+          </button>
         </div>
 
-
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-black/10 text-neutral-500 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
-          ↗
+        <div
+          className={`grid transition-[grid-template-rows,opacity] duration-500 ease-out ${
+            openWhyFeature === 3 ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
+        >
+          <div className="overflow-hidden md:pl-[140px] md:pr-[100px]">
+            <p className="pb-8 text-sm leading-7 text-neutral-500 md:text-base">
+              Get practical guidance on system sizing, expected savings, installation requirements and the solar option that best fits your property.
+            </p>
+          </div>
         </div>
-
       </div>
 
-
       {/* FEATURE 04 */}
-      <div className="group grid gap-6 border-b border-black/10 py-10 md:grid-cols-[80px_1fr_60px] md:items-center">
+      <div
+        className={`group border-b border-black/10 transition-all duration-500 ${
+          openWhyFeature === 4 ? "bg-white/50" : ""
+        }`}
+      >
+        <div className="grid gap-6 py-10 md:grid-cols-[80px_1fr_60px] md:items-center">
+          <span className="text-sm text-neutral-300">04</span>
 
-        <span className="text-sm text-neutral-300">
-          04
-        </span>
+          <div>
+            <img
+              src="/why-us/04-customer-support.png"
+              alt=""
+              width="64"
+              height="64"
+              className="mb-5 h-16 w-16 object-contain transition-transform duration-500 group-hover:-translate-y-1 group-hover:scale-105"
+            />
+            <h3 className="text-3xl font-medium tracking-tight text-neutral-950 transition-all duration-300 group-hover:translate-x-2 group-hover:text-orange-500 md:text-4xl">
+              Customer Support
+            </h3>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 md:text-base">
+              Dedicated support to help you throughout your solar journey.
+            </p>
+          </div>
 
-
-        <div>
-
-          <h3 className="text-3xl font-medium tracking-tight text-neutral-950 transition-all duration-300 group-hover:translate-x-2 group-hover:text-orange-500 md:text-4xl">
-            Customer Support
-          </h3>
-
-          <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 md:text-base">
-            Dedicated support to help you throughout your solar
-            journey.
-          </p>
-
+          <button
+            type="button"
+            aria-expanded={openWhyFeature === 4}
+            aria-label="Learn more about Customer Support"
+            onClick={() => setOpenWhyFeature(openWhyFeature === 4 ? null : 4)}
+            className={`flex h-11 w-11 items-center justify-center rounded-full border text-neutral-500 transition-all duration-300 hover:border-orange-400 hover:bg-orange-400 hover:text-black ${
+              openWhyFeature === 4 ? "rotate-45 border-orange-400 bg-orange-400 text-black" : "border-black/10"
+            }`}
+          >
+            ↗
+          </button>
         </div>
 
-
-        <div className="flex h-11 w-11 items-center justify-center rounded-full border border-black/10 text-neutral-500 transition-all duration-300 group-hover:border-orange-400 group-hover:bg-orange-400 group-hover:text-black">
-          ↗
+        <div
+          className={`grid transition-[grid-template-rows,opacity] duration-500 ease-out ${
+            openWhyFeature === 4 ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
+          }`}
+        >
+          <div className="overflow-hidden md:pl-[140px] md:pr-[100px]">
+            <p className="pb-8 text-sm leading-7 text-neutral-500 md:text-base">
+              Our support continues beyond installation, helping you with questions, system performance and ongoing solar requirements.
+            </p>
+          </div>
         </div>
-
       </div>
 
     </div>
-
 
     {/* =========================
         BOTTOM CTA
@@ -872,6 +1692,8 @@ export default function Home() {
       {/* Image */}
       <img
         src="/projects/solar-power-project.jpeg"
+        width="1200"
+        height="800"
         alt="Solar Power Project"
         loading="lazy"
         decoding="async"
@@ -917,6 +1739,8 @@ export default function Home() {
         {/* Image */}
         <img
           src="/projects/business-solar-solution.jpeg"
+          width="900"
+          height="600"
           alt="Business Solar Solution"
           loading="lazy"
           decoding="async"
@@ -958,6 +1782,8 @@ export default function Home() {
         {/* Image */}
         <img
           src="/projects/rooftop-solar.jpeg"
+          width="900"
+          height="600"
           alt="Rooftop Solar"
           loading="lazy"
           decoding="async"
