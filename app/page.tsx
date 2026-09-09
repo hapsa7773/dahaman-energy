@@ -1089,7 +1089,9 @@ export default function Home() {
                   alt={alt}
                   width="250"
                   height="154"
-                  className="h-full w-full object-cover"
+                  className={`h-full w-full object-cover ${
+  alt === "K-Solar" ? "scale-[1.12]" : ""
+}`}
                   loading="lazy"
                 />
               </div>
@@ -1117,7 +1119,9 @@ export default function Home() {
                   alt=""
                   width="250"
                   height="154"
-                  className="h-full w-full object-cover"
+                  className={`h-full w-full object-cover ${
+  alt === "K-Solar" ? "scale-[1.12]" : ""
+}`}
                   loading="lazy"
                 />
               </div>
@@ -2112,7 +2116,7 @@ export default function Home() {
 
             {/* PHONE */}
             <a
-              href="tel:+919057034374"
+              href="tel:+919057034374,8560034374"
               className="group flex items-center gap-5 rounded-2xl border border-white/10 bg-white/[0.04] p-5 transition-all duration-300 hover:border-orange-400/40 hover:bg-white/[0.07]"
             >
 
@@ -2138,7 +2142,7 @@ export default function Home() {
                 </p>
 
                 <p className="mt-1 text-base font-medium text-white">
-                  +91-9057034374
+                  +91-9057034374 , 8560034374
                 </p>
 
               </div>
@@ -2540,10 +2544,10 @@ S151-152, Kalwar Road, Arihant Nagar, Hathoj, Jaipur, Rajasthan
               </p>
 
               <a
-                href="tel:+919057034374"
+                href="tel:+919057034374 , 8560034374"
                 className="text-sm text-white/70 transition-colors hover:text-orange-400"
               >
-                +91-9057034374
+                +91-9057034374 , 8560034374
               </a>
             </div>
 
