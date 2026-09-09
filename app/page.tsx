@@ -186,7 +186,7 @@ export default function Home() {
             aria-hidden="true"
           >
             <img
-              src="/hero-earth-solar.webp"
+              src="/hero-earth-solar.png"
               alt=""
               width="390"
               height="390"
