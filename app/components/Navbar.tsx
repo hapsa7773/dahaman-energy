@@ -5,12 +5,12 @@ import Link from "next/link";
 import { Menu, X, ArrowUpRight } from "lucide-react";
 
 const navItems = [
-  { name: "Home", href: "#home" },
-  { name: "About", href: "#about" },
-  { name: "Services", href: "#services" },
-  { name: "Projects", href: "#projects" },
-  { name: "Solar Calculator", href: "#solar-calculator" },
-  { name: "Contact", href: "#quote" },
+  { name: "Home", href: "/" },
+  { name: "About", href: "/about" },
+  { name: "Services", href: "/services" },
+  { name: "Projects", href: "/projects" },
+  { name: "Solar Calculator", href: "/solar-calculator" },
+  { name: "Contact", href: "/contact" },
 ];
 
 export default function Navbar() {
@@ -28,7 +28,7 @@ export default function Navbar() {
             LOGO
         ========================= */}
         <Link
-          href="#home"
+          href="/"
           onClick={() => setOpen(false)}
           className="group relative flex items-center rounded-xl p-1 transition-all duration-300"
         >
@@ -89,7 +89,7 @@ export default function Navbar() {
             DESKTOP CTA
         ========================= */}
         <Link
-          href="#quote"
+          href="/contact"
           className="
             group hidden items-center gap-2
             rounded-full
@@ -193,7 +193,7 @@ export default function Navbar() {
                 MOBILE CTA
             ========================= */}
             <Link
-              href="#quote"
+              href="/contact"
               onClick={() => setOpen(false)}
               className="
                 group mt-5
