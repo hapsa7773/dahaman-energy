@@ -51,6 +51,7 @@ function CountUp({
 
 export default function About() {
   const [openWhySolar, setOpenWhySolar] = useState<number | null>(null);
+  const [openWhyChoose, setOpenWhyChoose] = useState<number | null>(null);
 
   return (
     <main className="bg-white text-neutral-900">
@@ -60,8 +61,36 @@ export default function About() {
        <section
         id="about"
         style={{ contentVisibility: "auto", containIntrinsicSize: "800px" }}
-        className="bg-[#f5f4f1] px-6 py-28 md:px-10 lg:px-12"
+       className="relative isolate overflow-hidden bg-[#f7f3eb] px-6 py-28 md:px-10 lg:px-12"
       >
+        
+{/* CSS SOLAR SUNLIGHT BACKGROUND */}
+<div
+  aria-hidden="true"
+  className="pointer-events-none absolute inset-0 -z-10"
+  style={{
+    background: `
+      radial-gradient(
+        ellipse at 85% 10%,
+        rgba(255, 190, 85, 0.30) 0%,
+        rgba(255, 220, 160, 0.16) 28%,
+        transparent 58%
+      ),
+      radial-gradient(
+        ellipse at 5% 75%,
+        rgba(255, 215, 150, 0.20) 0%,
+        transparent 45%
+      ),
+      linear-gradient(
+        135deg,
+        #f7f3eb 0%,
+        #f1e9db 50%,
+        #faf6ef 100%
+      )
+    `,
+  }}
+/>
+
         <div className="mx-auto max-w-7xl">
 
           {/* HEADER */}
@@ -154,6 +183,140 @@ export default function About() {
             </div>
 
           </div>
+
+          
+{/* WHY CHOOSE US - ORIGINAL STYLE */}
+<section
+  id="why-choose-us"
+  className="mt-20 md:mt-24"
+>
+  <div className="grid gap-10 md:grid-cols-[0.65fr_1.35fr]">
+    <div className="pt-2">
+      <p className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.3em] text-orange-500">
+        <span className="h-px w-8 bg-orange-400" />
+        Why Choose Us
+      </p>
+    </div>
+
+    <div>
+      <h2 className="max-w-5xl text-5xl font-semibold leading-[0.94] tracking-[-0.055em] text-neutral-950 md:text-6xl lg:text-[76px]">
+        Powering your journey
+        <br />
+        <span className="text-neutral-400">
+          with confidence.
+        </span>
+      </h2>
+
+      <p className="mt-8 max-w-2xl text-base leading-7 text-neutral-500 md:text-lg">
+        From consultation to installation, Dahaman Energy is
+        committed to delivering reliable solar solutions and
+        dependable customer support.
+      </p>
+    </div>
+  </div>
+
+  <div className="mt-20 border-t border-black/10">
+    {[
+      {
+        id: 1,
+        title: "Quality Services",
+        description:
+          "We focus on delivering quality solar services designed around your specific energy requirements.",
+        detail:
+          "From understanding your energy needs to planning and installation, we focus on practical solar solutions with attention to quality at every stage.",
+        symbol: "✳",
+      },
+      {
+        id: 2,
+        title: "Expert Consultation",
+        description:
+          "Get guidance to understand the solar solution best suited to your requirements.",
+        detail:
+          "We help you evaluate your requirements and explore suitable solar options for your property or business.",
+        symbol: "⌕",
+      },
+      {
+        id: 3,
+        title: "Reliable Installation",
+        description:
+          "Thoughtfully planned solar installations focused on dependable performance.",
+        detail:
+          "Our approach focuses on suitable system planning and careful execution according to project requirements.",
+        symbol: "↗",
+      },
+      {
+        id: 4,
+        title: "Dependable Support",
+        description:
+          "Support to help you navigate your solar journey with confidence.",
+        detail:
+          "We aim to provide clear communication and assistance throughout your solar project journey.",
+        symbol: "◌",
+      },
+    ].map((item) => {
+      const isOpen = openWhyChoose === item.id;
+
+      return (
+        <div
+          key={item.id}
+          className={`border-b border-black/10 transition-colors duration-300 ${
+            isOpen ? "bg-white/40" : ""
+          }`}
+        >
+          <button
+            type="button"
+            aria-expanded={isOpen}
+            onClick={() =>
+              setOpenWhyChoose(isOpen ? null : item.id)
+            }
+            className="grid w-full grid-cols-[32px_1fr_44px] items-center gap-4 py-10 text-left md:grid-cols-[64px_1fr_60px] md:py-12"
+          >
+            <span className="text-xs text-neutral-300">
+              {String(item.id).padStart(2, "0")}
+            </span>
+
+            <div>
+              <span className="mb-6 flex h-10 w-10 items-center justify-center text-3xl text-orange-500">
+                {item.symbol}
+              </span>
+
+              <h3
+                className={`text-2xl font-medium tracking-tight transition-colors duration-300 md:text-3xl ${
+                  isOpen
+                    ? "text-orange-500"
+                    : "text-neutral-950"
+                }`}
+              >
+                {item.title}
+              </h3>
+
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-neutral-500 md:text-base md:leading-7">
+                {item.description}
+              </p>
+
+              {isOpen && (
+                <p className="mt-4 max-w-2xl text-sm leading-7 text-neutral-500">
+                  {item.detail}
+                </p>
+              )}
+            </div>
+
+            <span
+              className={`ml-auto flex h-11 w-11 items-center justify-center rounded-full border border-black/10 text-lg text-neutral-500 transition-all duration-300 ${
+                isOpen
+                  ? "rotate-45 border-orange-300 text-orange-500"
+                  : "hover:border-orange-300 hover:text-orange-500"
+              }`}
+            >
+              ↗
+            </span>
+          </button>
+        </div>
+      );
+    })}
+  </div>
+</section>
+
 
 
           {/* LOWER CONTENT */}
