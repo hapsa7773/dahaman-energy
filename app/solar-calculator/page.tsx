@@ -1,62 +1,101 @@
 "use client";
 
 import { useState } from "react";
-import Navbar from "../components/Navbar";
+import {
+  isValid,
+  validateIndianMobile,
+  validatePositiveNumber,
+} from "@/lib/validation";
+import Container from "../components/ui/Container";
+import FormField from "../components/ui/FormField";
+
+type CalculatorForm = {
+  name: string;
+  mobile: string;
+  bill: string;
+  unitCost: string;
+};
+
+type CalculatorErrors = Partial<Record<keyof CalculatorForm, string>>;
+
+type CalculatorResult = {
+  units: number;
+  systemSize: number;
+  monthlySavings: number;
+  annualSavings: number;
+};
+
+/*
+ * Estimation formula (unchanged from the original page):
+ * - monthly units  = bill / unit cost
+ * - system size    = units / 120 per kW, rounded UP to the nearest 0.5 kW (min 1 kW)
+ * - monthly saving = 80% of the bill
+ * TODO (business): confirm these assumptions with the technical team.
+ */
+function estimate(bill: number, unitCost: number): CalculatorResult {
+  const units = bill / unitCost;
+  const systemSize = Math.max(1, Math.ceil((units / 120) * 2) / 2);
+  const monthlySavings = bill * 0.8;
+
+  return {
+    units: Math.round(units),
+    systemSize,
+    monthlySavings: Math.round(monthlySavings),
+    annualSavings: Math.round(monthlySavings * 12),
+  };
+}
 
 export default function SolarCalculator() {
-  const [calculator, setCalculator] = useState({
+  const [calculator, setCalculator] = useState<CalculatorForm>({
     name: "",
     mobile: "",
     bill: "",
     unitCost: "",
   });
+  const [errors, setErrors] = useState<CalculatorErrors>({});
+  const [calculatorResult, setCalculatorResult] = useState<CalculatorResult | null>(null);
 
-  const [calculatorResult, setCalculatorResult] = useState<{
-    units: number;
-    systemSize: number;
-    monthlySavings: number;
-    annualSavings: number;
-  } | null>(null);
+  /** Updates one field and clears its error message as the user types. */
+  const updateField = (field: keyof CalculatorForm, value: string) => {
+    setCalculator((current) => ({ ...current, [field]: value }));
+    if (errors[field]) setErrors((current) => ({ ...current, [field]: undefined }));
+  };
 
-  const handleCalculatorSubmit = (e: React.FormEvent) => {
+  const handleCalculatorSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    const bill = Number(calculator.bill);
-    const unitCost = Number(calculator.unitCost);
+    const nextErrors: CalculatorErrors = {
+      // Name and mobile are optional here, but if a mobile is typed it must be valid.
+      mobile: validateIndianMobile(calculator.mobile, { required: false }),
+      bill: validatePositiveNumber(calculator.bill, "monthly bill"),
+      unitCost: validatePositiveNumber(calculator.unitCost, "unit cost"),
+    };
+    setErrors(nextErrors);
 
-    if (!bill || !unitCost) return;
+    if (!isValid(nextErrors)) {
+      // Don't keep showing an old result for different, invalid input.
+      setCalculatorResult(null);
+      const firstInvalid = (Object.keys(nextErrors) as (keyof CalculatorForm)[]).find(
+        (field) => nextErrors[field]
+      );
+      if (firstInvalid) document.getElementById(`calc-${firstInvalid}`)?.focus();
+      return;
+    }
 
-    const units = bill / unitCost;
-
-    const systemSize = Math.max(
-      1,
-      Math.ceil((units / 120) * 2) / 2
-    );
-
-    const monthlySavings = bill * 0.8;
-
-    setCalculatorResult({
-      units: Math.round(units),
-      systemSize,
-      monthlySavings: Math.round(monthlySavings),
-      annualSavings: Math.round(monthlySavings * 12),
-    });
+    setCalculatorResult(estimate(Number(calculator.bill), Number(calculator.unitCost)));
   };
 
   return (
     <main className="bg-white text-neutral-900">
-      <Navbar />
 
-      {/* SOLAR CALCULATOR SECTION WILL COME HERE */}
-            <section
+      <section
         id="solar-calculator"
-        style={{ contentVisibility: "auto", containIntrinsicSize: "800px" }}
-        className="relative overflow-hidden bg-neutral-950 px-6 py-28 md:px-10 lg:px-12"
+        className="page-top relative overflow-hidden bg-ink pb-28"
       >
         {/* Background glow */}
         <div className="absolute right-0 top-1/2 h-[500px] w-[500px] -translate-y-1/2 rounded-full bg-orange-400/10 blur-3xl" />
 
-        <div className="relative z-10 mx-auto max-w-7xl">
+        <Container className="relative z-10">
 
           <div className="grid gap-16 lg:grid-cols-2 lg:items-center">
 
@@ -67,13 +106,13 @@ export default function SolarCalculator() {
                 Solar Calculator
               </p>
 
-              <h2 className="mt-5 max-w-2xl text-5xl font-semibold leading-[0.95] tracking-[-0.05em] text-white md:text-6xl lg:text-7xl">
+              <h1 className="mt-5 max-w-2xl text-5xl font-semibold leading-[0.95] tracking-[-0.05em] text-white md:text-6xl lg:text-7xl">
                 Know your
                 <br />
                 <span className="text-white/40">
                   solar potential.
                 </span>
-              </h2>
+              </h1>
 
               <p className="mt-7 max-w-xl text-base leading-7 text-white/55 md:text-lg">
                 Find out how much you can save by switching to solar.
@@ -125,82 +164,62 @@ export default function SolarCalculator() {
               </div>
 
 
-              <form className="space-y-5" onSubmit={handleCalculatorSubmit}>
+              <form className="space-y-5" onSubmit={handleCalculatorSubmit} noValidate>
 
-                {/* NAME */}
-                <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-white/40">
-                    Name
-                  </label>
+                <FormField
+                  id="calc-name"
+                  tone="dark"
+                  label="Name"
+                  type="text"
+                  autoComplete="name"
+                  placeholder="Your name"
+                  value={calculator.name}
+                  onChange={(e) => updateField("name", e.target.value)}
+                />
 
-                  <input
-                    type="text"
-                    placeholder="Your name"
-                    value={calculator.name}
-                    onChange={(e) => setCalculator({ ...calculator, name: e.target.value })}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-white outline-none placeholder:text-white/25 transition focus:border-orange-400/60"
-                  />
-                </div>
+                <FormField
+                  id="calc-mobile"
+                  tone="dark"
+                  label="Mobile Number"
+                  type="tel"
+                  autoComplete="tel"
+                  inputMode="tel"
+                  placeholder="+91 XXXXX XXXXX"
+                  value={calculator.mobile}
+                  onChange={(e) => updateField("mobile", e.target.value)}
+                  error={errors.mobile}
+                />
 
+                <FormField
+                  id="calc-bill"
+                  tone="dark"
+                  label="Monthly Electricity Bill"
+                  type="number"
+                  inputMode="decimal"
+                  min={1}
+                  required
+                  prefix="₹"
+                  placeholder="Enter monthly bill"
+                  value={calculator.bill}
+                  onChange={(e) => updateField("bill", e.target.value)}
+                  error={errors.bill}
+                />
 
-                {/* MOBILE */}
-                <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-white/40">
-                    Mobile Number
-                  </label>
-
-                  <input
-                    type="tel"
-                    placeholder="+91 XXXXX XXXXX"
-                    value={calculator.mobile}
-                    onChange={(e) => setCalculator({ ...calculator, mobile: e.target.value })}
-                    className="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3.5 text-sm text-white outline-none placeholder:text-white/25 transition focus:border-orange-400/60"
-                  />
-                </div>
-
-
-                {/* MONTHLY BILL */}
-                <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-white/40">
-                    Monthly Electricity Bill
-                  </label>
-
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
-                      ₹
-                    </span>
-
-                    <input
-                      type="number"
-                      placeholder="Enter monthly bill"
-                      value={calculator.bill}
-                      onChange={(e) => setCalculator({ ...calculator, bill: e.target.value })}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 py-3.5 pl-9 pr-4 text-sm text-white outline-none placeholder:text-white/25 transition focus:border-orange-400/60"
-                    />
-                  </div>
-                </div>
-
-
-                {/* UNIT COST */}
-                <div>
-                  <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-white/40">
-                    Electricity Unit Cost
-                  </label>
-
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40">
-                      ₹
-                    </span>
-
-                    <input
-                      type="number"
-                      placeholder="Cost per unit"
-                      value={calculator.unitCost}
-                      onChange={(e) => setCalculator({ ...calculator, unitCost: e.target.value })}
-                      className="w-full rounded-xl border border-white/10 bg-white/5 py-3.5 pl-9 pr-4 text-sm text-white outline-none placeholder:text-white/25 transition focus:border-orange-400/60"
-                    />
-                  </div>
-                </div>
+                <FormField
+                  id="calc-unitCost"
+                  tone="dark"
+                  label="Electricity Unit Cost"
+                  type="number"
+                  inputMode="decimal"
+                  min={0.01}
+                  step="0.01"
+                  required
+                  prefix="₹"
+                  placeholder="Cost per unit"
+                  value={calculator.unitCost}
+                  onChange={(e) => updateField("unitCost", e.target.value)}
+                  error={errors.unitCost}
+                />
 
 
                 {/* BUTTON */}
@@ -249,7 +268,7 @@ export default function SolarCalculator() {
 
           </div>
 
-        </div>
+        </Container>
       </section>
 
 

@@ -1,150 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Navbar from "./components/Navbar";
+import { useState } from "react";
+import { brands } from "@/lib/data/brands";
+import { partners } from "@/lib/data/partners";
+import { heroStats } from "@/lib/data/stats";
+import Container from "./components/ui/Container";
+import { ButtonLink } from "./components/ui/Button";
 
-
-function CountUp({
-  end,
-  suffix = "",
-  duration = 1800,
-}: {
-  end: number;
-  suffix?: string;
-  duration?: number;
-}) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLSpanElement>(null);
-  const animationRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    const element = ref.current;
-    if (!element) return;
-
-    const animate = () => {
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-
-      setCount(0);
-      const startTime = performance.now();
-
-      const update = (now: number) => {
-        const progress = Math.min((now - startTime) / duration, 1);
-        const eased = 1 - Math.pow(1 - progress, 3);
-
-        setCount(Math.round(eased * end));
-
-        if (progress < 1) {
-          animationRef.current = requestAnimationFrame(update);
-        } else {
-          setCount(end);
-        }
-      };
-
-      animationRef.current = requestAnimationFrame(update);
-    };
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          animate();
-        } else {
-          if (animationRef.current) {
-            cancelAnimationFrame(animationRef.current);
-          }
-          setCount(0);
-        }
-      },
-      { threshold: 0.25 }
-    );
-
-    observer.observe(element);
-
-    return () => {
-      observer.disconnect();
-      if (animationRef.current) {
-        cancelAnimationFrame(animationRef.current);
-      }
-    };
-  }, [end, duration]);
-
-  return (
-    <span ref={ref}>
-      {count}
-      {suffix}
-    </span>
-  );
-}
+/*
+ * The marquees repeat their items twice so the animation can loop
+ * seamlessly. The second copy is decorative only: it is hidden from screen
+ * readers (aria-hidden) and keyboard users (tabIndex -1).
+ */
+const brandLoop = [...brands, ...brands];
+const partnerLoop = [...partners, ...partners];
 
 export default function Home() {
-
-  const [openWhyFeature, setOpenWhyFeature] = useState<number | null>(null);
-  const [openWhySolar, setOpenWhySolar] = useState<number | null>(null);
   const [activePartner, setActivePartner] = useState<string | null>(null);
-
-  const [calculator, setCalculator] = useState({
-    name: "",
-    mobile: "",
-    bill: "",
-    unitCost: "",
-  });
-  const [calculatorResult, setCalculatorResult] = useState<{
-    units: number;
-    systemSize: number;
-    monthlySavings: number;
-    annualSavings: number;
-  } | null>(null);
-
-  const [quoteForm, setQuoteForm] = useState({
-    name: "",
-    email: "",
-    whatsapp: "",
-    bill: "",
-    city: "",
-    pin: "",
-  });
-
-  const handleCalculatorSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const bill = Number(calculator.bill);
-    const unitCost = Number(calculator.unitCost);
-
-    if (!bill || !unitCost || bill <= 0 || unitCost <= 0) {
-      setCalculatorResult(null);
-      return;
-    }
-
-    const units = bill / unitCost;
-    const systemSize = Math.max(1, Math.ceil((units / 120) * 2) / 2);
-    const monthlySavings = bill * 0.8;
-
-    setCalculatorResult({
-      units: Math.round(units),
-      systemSize,
-      monthlySavings: Math.round(monthlySavings),
-      annualSavings: Math.round(monthlySavings * 12),
-    });
-  };
-
-  const handleQuoteSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const message = `Hello Dahaman Energy,\n\nI would like to get a free solar quote.\n\nName: ${quoteForm.name}\nEmail: ${quoteForm.email}\nWhatsApp Number: ${quoteForm.whatsapp}\nMonthly Electricity Bill: ₹${quoteForm.bill}\nCity: ${quoteForm.city}\nArea Pin Code: ${quoteForm.pin}`;
-
-    const whatsappUrl = `https://wa.me/919057034374?text=${encodeURIComponent(
-      message
-    )}`;
-
-    window.open(whatsappUrl, "_blank");
-  };
+  const activePartnerLogo = partners.find((p) => p.name === activePartner)?.logo;
 
   return (
     <main className="bg-white text-neutral-900">
-
-      <Navbar />
-
       {/* =========================
     HERO
 ========================= */}
@@ -180,9 +56,9 @@ export default function Home() {
             />
           </div>
 
-          {/* Mobile */}
+          {/* Mobile + tablet (the desktop image above only appears from lg) */}
           <div
-            className="pointer-events-none absolute bottom-[-35px] right-[-24%] z-[2] h-[390px] w-[390px] md:hidden"
+            className="pointer-events-none absolute bottom-[-35px] right-[-24%] z-[2] h-[390px] w-[390px] md:right-[-6%] md:h-[460px] md:w-[460px] lg:hidden"
             aria-hidden="true"
           >
             <img
@@ -238,58 +114,25 @@ export default function Home() {
             {/* Buttons */}
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
 
-              <a
-                href="/contact"
-                className="rounded-full bg-orange-400 px-7 py-3.5 text-center text-sm font-semibold text-black transition hover:bg-orange-300"
-              >
+              <ButtonLink href="/contact" variant="primary" size="lg">
                 Get a Free Quote
-              </a>
+              </ButtonLink>
 
-              <a
-                href="/services"
-                className="rounded-full border border-white/15 bg-white/[0.06] px-7 py-3.5 text-center text-sm font-medium text-white transition hover:bg-white/10"
-              >
+              <ButtonLink href="/services" variant="ghost" size="lg">
                 Explore Our Solutions
-              </a>
+              </ButtonLink>
 
             </div>
 
 
             {/* Trust Stats */}
             <div className="mt-14 flex flex-wrap gap-x-10 gap-y-6 border-t border-white/10 pt-7">
-
-              <div>
-                <p className="text-2xl font-semibold text-white">
-                  10+
-                </p>
-
-                <p className="mt-1 text-xs text-white/45">
-                  Years Experience
-                </p>
-              </div>
-
-
-              <div>
-                <p className="text-2xl font-semibold text-white">
-                  10K+
-                </p>
-
-                <p className="mt-1 text-xs text-white/45">
-                  Happy Customers
-                </p>
-              </div>
-
-
-              <div>
-                <p className="text-2xl font-semibold text-white">
-                  100%
-                </p>
-
-                <p className="mt-1 text-xs text-white/45">
-                  Clean Energy
-                </p>
-              </div>
-
+              {heroStats.map((stat) => (
+                <div key={stat.label}>
+                  <p className="text-2xl font-semibold text-white">{stat.value}</p>
+                  <p className="mt-1 text-xs text-white/45">{stat.label}</p>
+                </div>
+              ))}
             </div>
 
           </div>
@@ -299,7 +142,7 @@ export default function Home() {
 
         {/* =========================
             HERO ABSTRACT VISUAL
-            Clean original style — no Earth, no solar panels.
+            Decorative CSS rings + glow drawn behind the Earth image.
         ========================= */}
         <div
           className="pointer-events-none absolute right-[-10%] top-1/2 z-[1] hidden h-[760px] w-[760px] -translate-y-1/2 md:block lg:right-[-4%] lg:h-[820px] lg:w-[820px]"
@@ -352,7 +195,7 @@ export default function Home() {
         style={{ contentVisibility: "auto", containIntrinsicSize: "600px" }}
         className="relative overflow-hidden bg-white py-24 text-neutral-950"
       >
-        <div className="mx-auto max-w-7xl px-6 md:px-8">
+        <Container>
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-[11px] font-medium uppercase tracking-[0.28em] text-orange-500">
               Trusted Brands
@@ -366,7 +209,7 @@ export default function Home() {
               high-performance solutions for every project.
             </p>
           </div>
-        </div>
+        </Container>
 
         {/* Continuous single-line logo marquee */}
         <div className="relative mt-16 overflow-hidden">
@@ -375,61 +218,25 @@ export default function Home() {
           <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-8 bg-gradient-to-l from-white/55 to-transparent md:w-12" />
 
           <div className="dahaman-brands-track flex w-max gap-4 px-4 hover:[animation-play-state:paused] md:gap-5">
-            {[
-              ["/brands/adani.png", "Adani"],
-              ["/brands/waaree.png", "Waaree"],
-              ["/brands/vikram-solar.png", "Vikram Solar"],
-              ["/brands/avaada.png", "Avaada"],
-              ["/brands/luminous.png", "Luminous"],
-              ["/brands/polycab.png", "Polycab"],
-              ["/brands/sungrow.png", "Sungrow"],
-              ["/brands/solis.png", "Solis"],
-              ["/brands/k-solar.png", "K-Solar"],
-            ].map(([src, alt]) => (
-              <div
-                key={`brand-a-${alt}`}
-                className="h-[142px] w-[220px] shrink-0 overflow-hidden rounded-2xl border border-transparent bg-[#090807] shadow-[0_12px_30px_rgba(0,0,0,0.16)] md:h-[154px] md:w-[250px]"
-              >
-                <img
-                  src={src}
-                  alt={alt}
-                  width="250"
-                  height="154"
-                  className={`h-full w-full object-cover ${alt === "K-Solar" ? "scale-[1.4]" : ""
-                    }`}
-                  loading="lazy"
-                />
-              </div>
-            ))}
-
-            {/* Exact duplicate = seamless loop */}
-            {[
-              ["/brands/adani.png", "Adani"],
-              ["/brands/waaree.png", "Waaree"],
-              ["/brands/vikram-solar.png", "Vikram Solar"],
-              ["/brands/avaada.png", "Avaada"],
-              ["/brands/luminous.png", "Luminous"],
-              ["/brands/polycab.png", "Polycab"],
-              ["/brands/sungrow.png", "Sungrow"],
-              ["/brands/solis.png", "Solis"],
-              ["/brands/k-solar.png", "K-Solar"],
-            ].map(([src, alt]) => (
-              <div
-                key={`brand-b-${alt}`}
-                aria-hidden="true"
-                className="h-[142px] w-[220px] shrink-0 overflow-hidden rounded-2xl border border-transparent bg-[#090807] shadow-[0_12px_30px_rgba(0,0,0,0.16)] md:h-[154px] md:w-[250px]"
-              >
-                <img
-                  src={src}
-                  alt=""
-                  width="250"
-                  height="154"
-                  className={`h-full w-full object-cover ${alt === "K-Solar" ? "scale-[1.4]" : ""
-                    }`}
-                  loading="lazy"
-                />
-              </div>
-            ))}
+            {brandLoop.map((brand, index) => {
+              const isCopy = index >= brands.length;
+              return (
+                <div
+                  key={`${brand.name}-${index}`}
+                  aria-hidden={isCopy || undefined}
+                  className="h-[142px] w-[220px] shrink-0 overflow-hidden rounded-2xl border border-transparent bg-[#090807] shadow-[0_12px_30px_rgba(0,0,0,0.16)] md:h-[154px] md:w-[250px]"
+                >
+                  <img
+                    src={brand.logo}
+                    alt={isCopy ? "" : brand.name}
+                    width="250"
+                    height="154"
+                    className={`h-full w-full object-cover ${brand.imageClassName ?? ""}`}
+                    loading="lazy"
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -466,7 +273,7 @@ export default function Home() {
           <div className="absolute left-1/2 top-0 h-[520px] w-[900px] -translate-x-1/2 rounded-full bg-orange-400/[0.035] blur-3xl" />
         </div>
 
-        <div className="relative mx-auto max-w-7xl px-5 md:px-8">
+        <Container className="relative">
           {/* Heading */}
           <div className="mx-auto mb-14 max-w-2xl text-center">
             <span className="mb-4 inline-flex items-center gap-2 rounded-full border border-orange-400/20 bg-orange-400/[0.06] px-4 py-2 text-xs font-medium uppercase tracking-[0.18em] text-orange-500">
@@ -486,70 +293,14 @@ export default function Home() {
           {/* Moving partner wall */}
           <div className="relative overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_8%,black_92%,transparent)]">
             <div className="dahaman-partners-track flex w-max gap-5 py-3 md:gap-7">
-              {[
-                {
-                  name: "M.G. College of Pharmaceutical Sciences",
-                  image: "/clients/mgcps.jpeg",
-                },
-                {
-                  name: "Oriana Power",
-                  image: "/clients/oriana-power.jpeg",
-                },
-                {
-                  name: "Larsen & Toubro",
-                  image: "/clients/larsen-toubro.jpeg",
-                },
-                {
-                  name: "Mahatma Gandhi Engineering College",
-                  image: "/clients/mahatma-gandhi-engineering.jpeg",
-                },
-                {
-                  name: "Jaipur Engineering College",
-                  image: "/clients/jaipur-engineering-college.jpeg",
-                },
-                {
-                  name: "Jaipur College of Pharmacy",
-                  image: "/clients/jaipur-college-pharmacy.jpeg",
-                },
-                {
-                  name: "National Sample Survey Office",
-                  image: "/clients/nsso.jpeg",
-                },
-              ]
-                .concat([
-                  {
-                    name: "M.G. College of Pharmaceutical Sciences",
-                    image: "/clients/mgcps.jpeg",
-                  },
-                  {
-                    name: "Oriana Power",
-                    image: "/clients/oriana-power.jpeg",
-                  },
-                  {
-                    name: "Larsen & Toubro",
-                    image: "/clients/larsen-toubro.jpeg",
-                  },
-                  {
-                    name: "Mahatma Gandhi Engineering College",
-                    image: "/clients/mahatma-gandhi-engineering.jpeg",
-                  },
-                  {
-                    name: "Jaipur Engineering College",
-                    image: "/clients/jaipur-engineering-college.jpeg",
-                  },
-                  {
-                    name: "Jaipur College of Pharmacy",
-                    image: "/clients/jaipur-college-pharmacy.jpeg",
-                  },
-                  {
-                    name: "National Sample Survey Office",
-                    image: "/clients/nsso.jpeg",
-                  },
-                ])
-                .map((partner, index) => (
+              {partnerLoop.map((partner, index) => {
+                const isCopy = index >= partners.length;
+                return (
                   <button
                     key={`${partner.name}-${index}`}
                     type="button"
+                    aria-hidden={isCopy || undefined}
+                    tabIndex={isCopy ? -1 : undefined}
                     aria-pressed={activePartner === partner.name}
                     onClick={() =>
                       setActivePartner((current) =>
@@ -573,8 +324,8 @@ export default function Home() {
                     </span>
 
                     <img
-                      src={partner.image}
-                      alt={partner.name}
+                      src={partner.logo}
+                      alt={isCopy ? "" : partner.name}
                       width="330"
                       height="190"
                       className="relative z-10 max-h-[115px] max-w-[82%] object-contain transition-all duration-500 ease-out group-hover:scale-[1.07]"
@@ -589,7 +340,8 @@ export default function Home() {
                         }`}
                     />
                   </button>
-                ))}
+                );
+              })}
             </div>
           </div>
 
@@ -603,17 +355,7 @@ export default function Home() {
               <div className="mx-auto flex max-w-3xl items-center gap-5 rounded-3xl border border-orange-400/15 bg-white px-6 py-5 shadow-[0_12px_40px_rgba(0,0,0,0.05)] md:px-8">
                 <div className="flex h-16 w-20 shrink-0 items-center justify-center rounded-2xl border border-black/[0.06] bg-[#fafafa] p-2">
                   <img
-                    src={
-                      [
-                        ["M.G. College of Pharmaceutical Sciences", "/clients/mgcps.jpeg"],
-                        ["Oriana Power", "/clients/oriana-power.jpeg"],
-                        ["Larsen & Toubro", "/clients/larsen-toubro.jpeg"],
-                        ["Mahatma Gandhi Engineering College", "/clients/mahatma-gandhi-engineering.jpeg"],
-                        ["Jaipur Engineering College", "/clients/jaipur-engineering-college.jpeg"],
-                        ["Jaipur College of Pharmacy", "/clients/jaipur-college-pharmacy.jpeg"],
-                        ["National Sample Survey Office", "/clients/nsso.jpeg"],
-                      ].find(([name]) => name === activePartner)?.[1] ?? "/dahaman-logo.png"
-                    }
+                    src={activePartnerLogo ?? "/dahaman-logo.png"}
                     alt=""
                     width="80"
                     height="64"
@@ -634,7 +376,7 @@ export default function Home() {
               </div>
             )}
           </div>
-        </div>
+        </Container>
 
         <style jsx>{`
           .dahaman-partners-track {
@@ -668,26 +410,6 @@ export default function Home() {
           }
         `}</style>
       </section>
-
-    
-      
-    <a
-  href="https://wa.me/919057034374?text=Hello%20Dahaman%20Energy%2C%20I%20would%20like%20to%20know%20more%20about%20your%20solar%20solutions."
-  target="_blank"
-  rel="noopener noreferrer"
-  aria-label="Chat with Dahaman Energy on WhatsApp"
-  className="group fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] shadow-[0_8px_30px_rgba(37,211,102,0.30)] transition-all duration-300 hover:-translate-y-1 hover:scale-105 hover:shadow-[0_12px_35px_rgba(37,211,102,0.40)]"
->
-  <svg
-    viewBox="0 0 32 32"
-    className="h-7 w-7 fill-white"
-    aria-hidden="true"
-  >
-    <path d="M19.11 17.39c-.27-.14-1.6-.79-1.85-.88-.25-.09-.43-.14-.61.14-.18.27-.7.88-.86 1.06-.16.18-.32.2-.59.07-.27-.14-1.14-.42-2.17-1.34-.8-.71-1.34-1.58-1.5-1.85-.16-.27-.02-.42.12-.56.12-.12.27-.32.41-.48.14-.16.18-.27.27-.45.09-.18.05-.34-.02-.48-.07-.14-.61-1.47-.84-2.01-.22-.53-.45-.46-.61-.47h-.52c-.18 0-.48.07-.73.34-.25.27-.95.93-.95 2.26s.98 2.62 1.11 2.8c.14.18 1.93 2.95 4.68 4.14.65.28 1.16.45 1.56.58.65.21 1.24.18 1.71.11.52-.08 1.6-.65 1.83-1.28.23-.63.23-1.17.16-1.28-.07-.11-.25-.18-.52-.32z" />
-    <path d="M16 3C8.82 3 3 8.82 3 16c0 2.29.6 4.44 1.65 6.3L3 29l6.86-1.6A12.94 12.94 0 0 0 16 29c7.18 0 13-5.82 13-13S23.18 3 16 3zm0 23.65c-2.06 0-4.08-.55-5.83-1.59l-.42-.25-4.07.95.97-3.97-.27-.43A10.94 10.94 0 1 1 16 26.65z" />
-  </svg>
-</a>
-     
     </main>
   );
 }
