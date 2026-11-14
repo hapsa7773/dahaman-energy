@@ -1,44 +1,22 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import { projects } from "@/lib/data/projects";
+import Container from "../components/ui/Container";
+import { ButtonLink } from "../components/ui/Button";
 
-const projects = [
-  {
-    number: "01",
-    category: "Featured Project",
-    title: "Solar Power Project",
-    description:
-      "A complete solar energy solution designed to deliver reliable and sustainable power for long-term performance.",
-    tag: "5kW",
-    image: "/projects/solar-power-project.jpeg",
-    featured: true,
-  },
-  {
-    number: "02",
-    category: "Commercial",
-    title: "Business Solar Solution",
-    description:
-      "Helping businesses move towards cleaner, smarter and more efficient energy.",
-    tag: "Commercial",
-    image: "/projects/business-solar-solution.jpeg",
-    featured: false,
-  },
-  {
-    number: "03",
-    category: "Residential",
-    title: "Rooftop Solar",
-    description:
-      "Efficient rooftop solar designed to turn available space into clean energy.",
-    tag: "Rooftop",
-    image: "/projects/rooftop-solar.jpeg",
-    featured: false,
-  },
-];
+export const metadata: Metadata = {
+  title: "Projects",
+  description:
+    "Explore the solar solutions delivered by Dahaman Energy across residential and commercial applications.",
+};
+
 
 export default function ProjectsPage() {
   return (
-    <main className="min-h-screen bg-[#f5f4f1] text-neutral-950">
+    <main className="min-h-screen bg-surface-paper text-neutral-950">
       {/* HERO */}
-      <section className="relative overflow-hidden bg-neutral-950 px-6 pb-24 pt-32 text-white md:px-10 md:pb-32 md:pt-40 lg:px-12">
+      <section className="page-top relative overflow-hidden bg-ink pb-24 text-white md:pb-32">
         {/* Background */}
         <div className="pointer-events-none absolute inset-0">
           <div className="absolute right-[8%] top-[20%] h-[420px] w-[420px] rounded-full bg-orange-400/15 blur-[100px]" />
@@ -46,7 +24,7 @@ export default function ProjectsPage() {
           <div className="absolute -right-10 top-1/2 h-[420px] w-[420px] -translate-y-1/2 rounded-full border border-orange-400/[0.06]" />
         </div>
 
-        <div className="relative z-10 mx-auto max-w-7xl">
+        <Container className="relative z-10">
           {/* Back */}
           <Link
             href="/"
@@ -75,12 +53,12 @@ export default function ProjectsPage() {
             Explore the solar solutions delivered by Dahaman Energy across
             residential and commercial applications.
           </p>
-        </div>
+        </Container>
       </section>
 
       {/* PROJECTS */}
-      <section className="px-6 py-20 md:px-10 md:py-28 lg:px-12">
-        <div className="mx-auto max-w-7xl">
+      <section className="py-20 md:py-28">
+        <Container>
           {/* Section intro */}
           <div className="mb-12 flex flex-col justify-between gap-5 md:flex-row md:items-end">
             <div>
@@ -184,35 +162,15 @@ export default function ProjectsPage() {
                 </p>
               </div>
 
-              <Link
-                href="/#quote"
-                className="group flex w-fit items-center gap-3 rounded-full bg-neutral-950 px-6 py-3.5 text-sm font-medium text-white transition-all duration-300 hover:bg-orange-400 hover:text-black"
-              >
+              <ButtonLink href="/contact" variant="dark" className="w-fit gap-3">
                 Get a Free Quote
-
-                <span className="transition-transform duration-300 group-hover:translate-x-1">
+                <span aria-hidden="true" className="transition-transform duration-300 group-hover:translate-x-1">
                   ↗
                 </span>
-              </Link>
+              </ButtonLink>
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* FOOTER NOTE */}
-      <section className="bg-neutral-950 px-6 py-10 text-white md:px-10 lg:px-12">
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 text-sm text-white/35 md:flex-row md:items-center">
-          <p>
-            © {new Date().getFullYear()} Dahaman Energy. All rights reserved.
-          </p>
-
-          <Link
-            href="/"
-            className="transition-colors hover:text-orange-400"
-          >
-            Dahaman Energy ↗
-          </Link>
-        </div>
+        </Container>
       </section>
     </main>
   );

@@ -1,7 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Navbar from "../components/Navbar";
+import { aboutStats } from "@/lib/data/stats";
+import Container from "../components/ui/Container";
+
+/* Border/padding for each stat cell so the 2x2 (tablet) and 1x4 (desktop)
+   grids get correct dividing lines. Index matches aboutStats order. */
+const statCellClasses = [
+  "border-b border-black/10 py-7 sm:border-r sm:pr-8 lg:border-b-0",
+  "border-b border-black/10 py-7 sm:pl-8 lg:border-b-0 lg:border-r",
+  "border-b border-black/10 py-7 sm:pr-8 lg:border-b-0 lg:border-r lg:pl-8",
+  "py-7 sm:pl-8",
+];
 
 function CountUp({
   end,
@@ -19,26 +29,47 @@ function CountUp({
     const element = ref.current;
     if (!element) return;
 
-    let startTime: number | null = null;
+    let frameId: number | null = null;
 
-    const animate = (time: number) => {
-      if (!startTime) startTime = time;
-
-      const progress = Math.min(
-        (time - startTime) / duration,
-        1
-      );
-
-      const value = Math.floor(progress * end);
-
-      setCount(value);
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
+    const run = () => {
+      // Respect the user's "reduce motion" OS setting: show the final value.
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        setCount(end);
+        return;
       }
+
+      const startTime = performance.now();
+
+      const animate = (time: number) => {
+        const progress = Math.min((time - startTime) / duration, 1);
+        setCount(Math.floor(progress * end));
+
+        if (progress < 1) {
+          frameId = requestAnimationFrame(animate);
+        }
+      };
+
+      frameId = requestAnimationFrame(animate);
     };
 
-    requestAnimationFrame(animate);
+    // Start counting only when the number scrolls into view, and only once.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          observer.disconnect();
+          run();
+        }
+      },
+      { threshold: 0.4 }
+    );
+
+    observer.observe(element);
+
+    // Cleanup when the component unmounts (e.g. user navigates away).
+    return () => {
+      observer.disconnect();
+      if (frameId !== null) cancelAnimationFrame(frameId);
+    };
   }, [end, duration]);
 
   return (
@@ -55,13 +86,10 @@ export default function About() {
 
   return (
     <main className="bg-white text-neutral-900">
-      <Navbar />
 
-      {/* ABOUT SECTION YAHAN AAYEGA */}
-       <section
+      <section
         id="about"
-        style={{ contentVisibility: "auto", containIntrinsicSize: "800px" }}
-       className="relative isolate overflow-hidden bg-[#f7f3eb] px-6 py-28 md:px-10 lg:px-12"
+        className="page-top relative isolate overflow-hidden bg-surface-warm pb-28"
       >
         
 {/* CSS SOLAR SUNLIGHT BACKGROUND */}
@@ -91,7 +119,7 @@ export default function About() {
   }}
 />
 
-        <div className="mx-auto max-w-7xl">
+        <Container>
 
           {/* HEADER */}
           <div className="grid gap-10 md:grid-cols-[0.65fr_1.35fr]">
@@ -106,13 +134,13 @@ export default function About() {
 
             <div>
 
-              <h2 className="max-w-5xl text-5xl font-semibold leading-[0.94] tracking-[-0.055em] text-neutral-950 md:text-6xl lg:text-[76px]">
+              <h1 className="max-w-5xl text-5xl font-semibold leading-[0.94] tracking-[-0.055em] text-neutral-950 md:text-6xl lg:text-[76px]">
                 Powering a cleaner
                 <br />
                 <span className="text-neutral-400">
                   energy future.
                 </span>
-              </h2>
+              </h1>
 
               <p className="mt-8 max-w-2xl text-base leading-7 text-neutral-500 md:text-lg">
                 Dahaman Energy is a leading solar energy company in India
@@ -126,62 +154,16 @@ export default function About() {
 
           {/* STATS */}
           <div className="mt-20 grid border-y border-black/10 sm:grid-cols-2 lg:grid-cols-4">
-
-            {/* STAT 01 */}
-            <div className="border-b border-black/10 py-7 sm:border-r sm:pr-8 lg:border-b-0">
-
-              <p className="text-4xl font-semibold tracking-[-0.04em] text-neutral-950">
-                <CountUp end={10} suffix="+" />
-              </p>
-
-              <p className="mt-2 text-xs uppercase tracking-[0.18em] text-neutral-400">
-                Years Experience
-              </p>
-
-            </div>
-
-
-            {/* STAT 02 */}
-            <div className="border-b border-black/10 py-7 sm:pl-8 lg:border-b-0 lg:border-r">
-
-              <p className="text-4xl font-semibold tracking-[-0.04em] text-neutral-950">
-                <CountUp end={10} suffix="K+" />
-              </p>
-
-              <p className="mt-2 text-xs uppercase tracking-[0.18em] text-neutral-400">
-                Happy Customers
-              </p>
-
-            </div>
-
-
-            {/* STAT 03 */}
-            <div className="border-b border-black/10 py-7 sm:pr-8 lg:border-b-0 lg:border-r lg:pl-8">
-
-              <p className="text-4xl font-semibold tracking-[-0.04em] text-neutral-950">
-                <CountUp end={100} />
-              </p>
-
-              <p className="mt-2 text-xs uppercase tracking-[0.18em] text-neutral-400">
-                Awards Winning
-              </p>
-
-            </div>
-
-
-            {/* STAT 04 */}
-            <div className="py-7 sm:pl-8">
-
-              <p className="text-4xl font-semibold tracking-[-0.04em] text-neutral-950">
-                <CountUp end={60} />
-              </p>
-
-              <p className="mt-2 text-xs uppercase tracking-[0.18em] text-neutral-400">
-                Global Brands
-              </p>
-
-            </div>
-
+            {aboutStats.map((stat, index) => (
+              <div key={stat.label} className={statCellClasses[index]}>
+                <p className="text-4xl font-semibold tracking-[-0.04em] text-neutral-950">
+                  <CountUp end={stat.end} suffix={stat.suffix} />
+                </p>
+                <p className="mt-2 text-xs uppercase tracking-[0.18em] text-neutral-400">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
           </div>
 
           
@@ -443,7 +425,7 @@ export default function About() {
 
           </div>
 
-        </div>
+        </Container>
       </section>
 
     </main>
